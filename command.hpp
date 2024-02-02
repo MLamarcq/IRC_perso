@@ -6,14 +6,14 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/01/29 20:35:33 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/02 15:11:25 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
-
+# define CLRF	"\r\n"
 # define SERVER_NAME				"ircserv"
 # define SERVER_HOSTNAME			std::string(SERVER_NAME) + ".fr"
 # define SERVER_VERSION				"v4.2"
@@ -52,6 +52,7 @@
 # define ERR_ALREADYREGISTRED(nick)					RPL_PREFIX("462", nick) + " :Unauthorized command (already registered)" + CLRF
 # define ERR_PASSWDMISMATCH(nick)					RPL_PREFIX("464", nick) + " :Password incorrect" + CLRF
 # define ERR_CHANNELISFULL(nick, chan)				RPL_PREFIX("471", nick) + " " + chan + " :Cannot join channel (+l)" + CLRF
+# define ERR_BANNEDFROMCHAN(nick, chan)				RPL_PREFIX("474", nick) + " " + chan + " :Bannded from channel (+b)" + CLRF
 # define ERR_BADCHANNELKEY(nick, chan)				RPL_PREFIX("475", nick) + " " + chan + " :Cannot join channel (+k)" + CLRF
 # define ERR_NOPRIVILEGES(nick)						RPL_PREFIX("481", nick) + " :Permission Denied- You're not an IRC operator" + CLRF
 # define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + " " + channel + " :You're not channel operator" + CLRF
@@ -60,11 +61,11 @@
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
 
 #include "server.hpp"
-#include "channel.hpp"
 
 class client;
-class channel;
 class Server;
+class channel;
+
 class command {
 
 	public:
@@ -74,14 +75,13 @@ class command {
 		~command();
 
 		
-		std::string		PASS();
-		std::string		NICK();
-		std::string		USER();
+		std::string		PASS(int fd, Server *serv);
+		std::string		NICK(int fd, Server *serv);
+		std::string		USER(int fd, Server *serv);
 		std::string		PING();
 		std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
-		std::string		JOIN(client *client1, std::string parameter, Server *serv);
 		std::string		PART();
 		std::string		TOPIC();
 		std::string		KICK();
@@ -90,6 +90,8 @@ class command {
 		std::string		NOTICE();
 		std::string		KILL();
 		std::string		WALLOPS();
+		std::string		JOIN(client *client1, Server *serv);
+
 		std::string		bot();
 
 

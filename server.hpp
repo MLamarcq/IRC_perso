@@ -21,8 +21,12 @@
 #include "colors.hpp"
 #include <signal.h>
 #include <map>
+#include <algorithm>
+#include <string>
 #include <iomanip>
+#include <sstream>
 
+#include "channel.hpp"
 #include "command.hpp"
 
 typedef struct s_serv
@@ -37,8 +41,8 @@ typedef struct s_serv
 } t_serv;
 
 class client;
-class command;
 class channel;
+class command;
 class Server
 {
 	public :
@@ -59,6 +63,10 @@ class Server
 			client* findClientBySocket(int clientSocketFd);
 			client*	findClientByNickName(std::string clientNickname);
 			void	eraseClientFromList(std::string clientNickname);
+			client*	findClientByUserName(std::string clientUserName);
+			void	sendWelcomeMessage(client* clientPtr);
+
+
 
 			//Getters and init constructor
 			std::string			getPort(void) const;
@@ -66,6 +74,7 @@ class Server
 			void				Copy_Struct(Server const &rhs);
 			void				init_struct(void);
 			void				fill_commands_vector(void);
+			std::vector<std::vector<std::string> > getCmdArgs(void) const;
 
 			//All about socket
 			void				Setup_Socket(void);
@@ -86,8 +95,9 @@ class Server
 			int					requestParsing(int ClientFd);
 			int					fillVectorRequest(int count, std::string tmp);
 			int					fillCmdMap(void);
-			void				executeCmd(int i, int clientFd, std::string parameter);
-			void				chooseAndExecuteAction(int clientFd);
+			std::string			executeCmd(int i, int clientFd);
+			std::string			chooseAndExecuteAction(int clientFd);
+			// void				putRequestArgInVector(void);
 
 
 			//Handle Signal
@@ -95,11 +105,12 @@ class Server
 			void				handle_sigint(int signal);
 			static void			handle_sigint_static(int signal);
 
-			//Channel functions
-			bool					checkChannel(void) const;
-			void					setNewChannel(channel *chan);
-			void					addClientToChannel(client *client1, std::string parameter);
-			std::list<channel *>	getListOfChannels(void) const;
+			//channel
+			std::list<channel *> getListOfChannels(void) const;
+			void				setNewChannel(channel *chan);
+			void				addClientToChannel(client *client1, std::string parameter);
+			bool				checkChannel(void) const;
+
 
 			//geter for la structure
 
@@ -149,20 +160,24 @@ class Server
 			};
 
 		t_serv								*M_struct;
+		std::map<std::string, std::vector<std::string> >	M_cmdMap;
+		std::string							M_pass_wd;
 	
 	private :
 
 			Server(void);
-			std::string							M_port;
-			std::string							M_pass_wd;
-			std::vector<std::string>			M_requestVector;
-			std::vector<std::string>			M_commands;
-			std::map<std::string, std::string>	M_cmdMap;
-			bool								M_working;
-			//t_serv								*M_struct;
-			command								*commandObj;
-			std::list<channel *> 				M_listOfChannels;
+			std::string										M_port;
+			std::vector<std::string>						M_requestVector;
+			std::vector<std::string>						M_commands;
+			// std::vector<std::vector<std::string> >			M_args;
+			bool											M_working;
+			//t_serv										*M_struct;
+			command											*commandObj;
+			std::list<channel *> 							M_listOfChannels;
 };
+
+std::string			intTostring(int number);
+std::vector<std::string> split_string_v2(const std::string& s, char delimiter);
 
 
 #endif

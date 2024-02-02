@@ -2,7 +2,7 @@ Meilleur parsing + switch/case -> mael + parsing dans first_connection
 
 Commandes : 
 
-Imrane : PING/PONG, PASS, NICK, QUIT, USER, MODE
+Imrane : PING/PONG, PASS, NICK, QUIT, USER
 
 Mael : OPER, JOIN, PART, MODE, KILL, NOTICE
 
@@ -31,4 +31,17 @@ IMRANE CHANGEMENT :
 - Passage de M_struct private à public
 - Ajout de l'objet command dans la structure de Serveur
 - ajout de la class Serveur dans la class command
-- création de la command QUIT 
+- création de la command QUIT
+
+
+
+02-02-2024 : Mael
+
+- Remplacement de la map dans le serveur : vecteur a la place de string
+- Changement dans le parsing dans fillCmdMap -> remplit le vecteur
+- Ajout de std::vector<std::string> split_string_v2(const std::string& s, char delimiter)
+- Changement de la fonction USER dans command -> adaptee a la map mais meme logique/comportement
+- Adaptation de JOIN
+- Rajout de la maccro BANNEDFROMCHAN pour la gestion d'erreur dans JOIN
+- Changement du prototype de executeCmd -> plus de parameter, mieux pour les fonctions d'Imrane
+- Rajout de "tmp = tmp.substr(token + 1, tmp.size())" dans fillVectorRequest -> permet de ne pas prendre en compte l'espace

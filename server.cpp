@@ -45,6 +45,27 @@ Server::~Server(void)
 	return ;
 }
 
+std::string	intTostring(int number)
+{
+	std::string result;
+	char digitChar;
+	
+	while (number <= 0)
+	{
+		std::srand(0);
+		number = std::rand();
+	}
+	while (number > 0) 
+	{
+		digitChar = '0' + (number % 10);
+		result.push_back(digitChar);
+		number /= 10;
+	}
+	if (result.size() > 4)
+		result = result.substr(0, 4);
+	return (result);
+}
+
 std::string Server::getPort(void) const
 {
 	return (this->M_port);
@@ -54,6 +75,11 @@ std::string Server::getPass_Wd(void) const
 {
 	return (this->M_pass_wd);
 }
+
+// std::vector<std::vector<std::string> > Server::getCmdArgs(void) const
+// {
+// 	return (this->M_args);
+// }
 
 void	Server::init_struct(void)
 {
@@ -157,47 +183,62 @@ void	Server::i_accept_connexion(void)
 
 void	Server::i_handle_first_connexion(void)
 {
+	//quand ya pas de connexion et que j'envoi quit
+	// je tombe sur une boucle infi
+	// je crois que c'est parce que il n'y a pas d'utilisateur rattaché
+
+	// ok fonctionne mais ne set pas les var avec ce que j'ai envoyé
+	// voir pk il n'y a pas le nickname et le hostname
+		// set yet Unauthorized command (already registered)
+		// en gros il prend pas le nom du buff pour mettre mais celui que g enregistré avant
+	// après essayer de se connecter avec le même nom
+	std::cout << "IM IN FIRST CONNEXION\n";
+
 	char buff[513];
 	std::string nickname;
 	std::string realName;
 	std::string userName;
 	std::string hostName;
-	int nbCar;
-
-	nbCar = read(this->M_struct->clientSockFd, buff, 512);
-	if (nbCar == 0)
-	{
-		close(this->M_struct->clientSockFd);
-		std::cout << "i close the connection for the sock" << this->M_struct->clientSockFd << "\n";
-	}
-	else
-	{
-		client * clientPtr;
-		buff[nbCar] = 0;
 	
-		std::cout << "nb car is " << nbCar << std::endl;
-		std::cout << "buff =" << buff << std::endl;
-
-		
-		// créer le client
-		clientPtr = this->createClient();
-		// remplir les infos du client
-		clientPtr->setIp(inet_ntoa(this->M_struct->sockStructClient.sin_addr));
-		clientPtr->setPort(ntohs(this->M_struct->sockStructClient.sin_port));
-		clientPtr->fillStrParam(buff, clientPtr);
-		clientPtr->setsocketFd(this->M_struct->clientSockFd);
-		
-		//ajouter le client dans la liste
-		this->listOfClients.push_back(clientPtr);
-		//nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 421 * LS :Unknown command\r\n");
-		nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 001 " + clientPtr->getNickName() + " :Welcome to the Internet Relay Network " + clientPtr->getNickName()+"!" + clientPtr->getUserName() + "@localhost\r\n");
-		nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 002 "+ clientPtr->getNickName() +  " :Your host is localhost, running version 1.0\r\n");
-		nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 003 "+ clientPtr->getNickName() + " :This server was created 01/01/24\r\n");
-		nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 004 " + clientPtr->getNickName() + " localhost 1.0\r\n");
-		clientPtr->setWelcomeMessageSent(true);
-		clientPtr->hello();
-		memset(buff, 0, 513);
+	client * clientPtr;
+	std::string convert;
+	int			personalNumber;
+	std::string name;
+	personalNumber = std::rand();
+	convert = intTostring(personalNumber);
+	name = "NotSetYet";
+	name.append("#");
+	name.append(convert);
+	clientPtr = this->createClient();
+	clientPtr->setNickName("NotSetYet");
+	clientPtr->setsocketFd(this->M_struct->clientSockFd);
+	clientPtr->setIp(inet_ntoa(this->M_struct->sockStructClient.sin_addr));
+	clientPtr->setPort(ntohs(this->M_struct->sockStructClient.sin_port));
+	//ajouter le client dans la liste
+	this->listOfClients.push_back(clientPtr);
+	
+	std::cout << "c1\n";
+	if (requestParsing(this->M_struct->clientSockFd) == 0)
+		return ;
+	std::cout << "c2\n";
+	std::string returnValue = chooseAndExecuteAction(this->M_struct->clientSockFd);
+	if (returnValue == "WRONG PASS" || returnValue == "WRONG USER" || returnValue == "WRONG NICK")
+	{
+		std::cout << "c3\n";
+		std::cout << returnValue << std::endl;
+		this->M_requestVector.clear();
+		this->M_cmdMap.clear();
+		this->eraseClientFromList(clientPtr->getNickName());
+		return ;
 	}
+	this->M_requestVector.clear();
+	this->M_cmdMap.clear();
+	//send welcome message
+	sendWelcomeMessage(clientPtr);
+	
+	memset(buff, 0, 513);
+	std::cout << "c4\n";
+
 
 }
 
@@ -208,16 +249,18 @@ int	Server::requestParsing(int ClientFd)
 	size_t	find_r = 0;
 	size_t	find_n = 0;
 	int		count = 0;
-
+	std::cout << "c1.1\n";
 	reader = read(ClientFd, buff, 512);
 	if (reader == -1)
 	{
 		std::cout << "Error reading. Please check client socket." << std::endl;
 		return (0);
 	}
+	std::cout << "c1.2\n";
 	buff[reader] = '\0';
+	std::cout << "BUFF IS : " << buff << std::endl;
 	std::string tmp(buff);
-	// std::cout << "tmp = " << tmp << std::endl;
+	std::cout << "tmp = " << tmp << std::endl;
 	size_t size  = tmp.size();
 	// std::cout << "Request size = " << size << std::endl;
 	while (find_n < size - 1)
@@ -231,23 +274,52 @@ int	Server::requestParsing(int ClientFd)
 		}
 		count++;
 	}
+	std::cout << "c1.3\n";
 	std::cout << "find_r = " << find_r << std::endl;
 	std::cout << "find_n = " << find_n << std::endl;
 	std::cout << "count = " << count << std::endl;
 	std::cout << "Tout s'est bien passe" << std::endl;
 	if (fillVectorRequest(count, tmp) == 0)
 		return (0);
+	std::cout << "c1.4\n";
 	if (fillCmdMap() == 0)
 		return (0);
+	// putRequestArgInVector();
+	std::cout << "c1.5\n";
 	return (1);
+}
+
+client*	Server::findClientByUserName(std::string clientUserName)
+{
+	std::string temp;
+	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
+		temp = (*it)->getUserName();
+		if (temp.find(clientUserName) != std::string::npos)
+			return (*it);
+	}
+	return (NULL);
+}
+
+
+void				Server::sendWelcomeMessage(client* clientPtr)
+{
+	i_send_message(this->M_struct->clientSockFd,":localhost 001 " + clientPtr->getNickName() + " :Welcome to the Internet Relay Network " + clientPtr->getNickName()+"!" + clientPtr->getUserName() + "@localhost\r\n");
+	i_send_message(this->M_struct->clientSockFd,":localhost 002 "+ clientPtr->getNickName() +  " :Your host is localhost, running version 1.0\r\n");
+	i_send_message(this->M_struct->clientSockFd,":localhost 003 "+ clientPtr->getNickName() + " :This server was created 01/01/24\r\n");
+	i_send_message(this->M_struct->clientSockFd,":localhost 004 " + clientPtr->getNickName() + " localhost 1.0\r\n");
+	clientPtr->setWelcomeMessageSent(true);
+	clientPtr->hello();
 }
 
 int	Server::fillVectorRequest(int count, std::string tmp)
 {
 	size_t token = 0;
 	int i = 0;
+	//std::cout << "c1.3.1\n";
 	while (i < count)
 	{
+		//std::cout << "c1.3.2\n";
+		//std::cout << "TMP IS "<< tmp << std::endl;
 		std::string string_copy = tmp;
 		std::string temp;
 		token = string_copy.find('\n');
@@ -257,16 +329,22 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 			return (0);
 		}
 		temp = string_copy.substr(0, token);
+		//std::cout << "TEMP IS " << temp << std::endl;
 		this->M_requestVector.push_back(temp);
 		temp.erase();
-		string_copy.erase(0, token);
+		//std::cout << "TEMP AFTER ERASE IS " << temp << std::endl;
+		//original
+			//string_copy.erase(0, token);
+		tmp = tmp.substr(token + 1, tmp.size());
 		i++;
 	}
 	// std::vector<std::string>::iterator ite = this->M_requestVector.end();
 	// for (std::vector<std::string>::iterator it = this->M_requestVector.begin(); it != ite; it++)
 	// 	std::cout << "vector = " << *it << std::endl;
+	//std::cout << "c1.3.3\n";
 	return (1);
 }
+
 
 int	Server::fillCmdMap(void)
 {
@@ -277,6 +355,7 @@ int	Server::fillCmdMap(void)
 	}
 	std::string first;
 	std::string second;
+	std::vector<std::string> temp;
 	std::vector<std::string>::iterator it = this->M_requestVector.begin();
 	std::vector<std::string>::iterator ite = this->M_requestVector.end();
 	while (it != ite)
@@ -289,74 +368,181 @@ int	Server::fillCmdMap(void)
 		}
 		first = it->substr(0, space);
 		std::cout << "first = " << first << std::endl;
-		second = it->substr(space, it->size());
+		second = it->substr(space + 1, it->size());
 		std::cout << "second = " << second << std::endl;
-		this->M_cmdMap[first] = second;
+		temp = split_string_v2(second, ' ');
+		this->M_cmdMap[first] = temp;
 		it++;
 	}
-	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
-	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
+	// std::map<std::string, std::vector<std::string> >::iterator m_it = this->M_cmdMap.begin();
+	// std::map<std::string, std::vector<std::string> >::iterator m_ite = this->M_cmdMap.end();
+	// while (m_it != m_ite)
+	// {
+	// 	std::cout << "La map = [" << m_it->first << "] = ";
+	// 	std::cout << m_it->second << std::endl;
+	// 	m_it++;
+	// }
+	std::map<std::string, std::vector<std::string> >::iterator m_it = this->M_cmdMap.begin();
+	std::map<std::string, std::vector<std::string> >::iterator m_ite = this->M_cmdMap.end();
+
 	while (m_it != m_ite)
 	{
-		std::cout << "La map : [" << m_it->first << "] =";
-		std::cout << m_it->second << std::endl;
+		std::cout << "La map = [" << m_it->first << "] = ";
+		for (size_t i = 0; i < m_it->second.size(); ++i)
+		{
+			std::cout << m_it->second[i] << " ";
+		}
+		std::cout << std::endl;
 		m_it++;
 	}
+
 	return (1);
 }
 
-void	Server::chooseAndExecuteAction(int clientFd)
+std::vector<std::string> split_string_v2(const std::string& s, char delimiter)
 {
-	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
-	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
+	std::vector<std::string> temp;
+	std::stringstream ss(s);
+	std::string token;
+	
+	while (std::getline(ss, token, delimiter))
+	{
+		temp.push_back(token);
+	}
+	
+	return temp;
+}
+
+// void	Server::putRequestArgInVector(void)
+// {
+// 	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
+// 	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
+// 	std::vector<std::string> temp;
+// 	while (m_it != m_ite)
+// 	{
+// 		temp = split_string_v2(m_it->second, ' ');
+// 		this->M_args.push_back(temp);
+// 		temp.clear();
+// 		// std::cout << "La map = [" << m_it->first << "] = " << m_it->second << std::endl;
+// 		m_it++;
+// 	}
+// 	// std::vector<std::vector<std::string> >::iterator it = this->M_args.begin();
+// 	// std::vector<std::vector<std::string> >::iterator ite = this->M_args.end();
+// 	// while (it != ite)
+// 	// {
+// 	// 	std::vector<std::string>::iterator v_it = (*it).begin();
+// 	// 	std::vector<std::string>::iterator v_ite = (*it).end();
+// 	// 	while (v_it != v_ite)
+// 	// 	{
+// 	// 		std::cout << "Voici ce que contient les vecteur : " << *v_it << std::endl;
+// 	// 		v_it++;
+// 	// 	}
+// 	// 	it++;
+// 	// }
+// 	return ;
+// }
+
+std::string	Server::chooseAndExecuteAction(int clientFd)
+{
+	std::map<std::string, std::vector <std::string> >::iterator m_it = this->M_cmdMap.begin();
+	std::map<std::string, std::vector <std::string> >::iterator m_ite = this->M_cmdMap.end();
 	//std::cout << "Je suis ici et la" << std::endl;
 	bool	toggle = false;
+	std::string returnValue;
+	std::cout << "c2.1\n";
 	for (; m_it != m_ite; m_it++)
 	{
 		int i = 1;
 		toggle = false;
 		std::vector<std::string>::iterator it = this->M_commands.begin();
 		std::vector<std::string>::iterator ite = this->M_commands.end();
+		std::cout << "La commande de MAP = " << m_it->first << std::endl;
 		for (; it != ite; it++)
 		{
-			std::map<std::string, std::string>::iterator it_found = this->M_cmdMap.find(*(it));
+			//std::map<std::string, std::string>::iterator it_found = this->M_cmdMap.find(*(it));
+			
 			//std::cout << "L'iterateur est = " << it_found->first <<std::endl;
-			if (it_found != this->M_cmdMap.end())
+			std::cout << "La commande de COMMANDS BRUTE = " << *it << std::endl;
+			//if (it_found != this->M_cmdMap.end())
+			if (m_it->first.find(*it)!= std::string::npos)
 			{
-				std::cout << "La commande = " << *it << std::endl;
+
+				std::cout << "c2.2\n";
+				std::cout << "La commande à lancer = " << *it << std::endl;
 				// std::cout << "La commande existe !" << std::endl;
 				// std::cout << "Il s'agit de " << it_found->second << std::endl;
 				toggle = true;
-				executeCmd(i, clientFd, m_it->second);
 				//on lance la fonction switch, on lui passe i
+				returnValue = executeCmd(i, clientFd);
+				if (returnValue == "WRONG PASS")
+					return ("WRONG PASS");
+				std::cout << "c2.3\n";
+				if (returnValue == "WRONG NICK")
+					return ("WRONG NICK");
+				std::cout << "c2.4\n";
+				if (returnValue == "WRONG USER")
+					return ("WRONG USER");
+				std::cout << "c2.5\n";
+				
 			}
 			if (toggle == true)
 				break ;
 			i++;
 		}
 	}
-	return ;
+	std::cout << "c2.6\n";
+	return (" ") ;
 }
 
-void	Server::executeCmd(int i, int clientFd, std::string parameter)
+std::string	Server::executeCmd(int i, int clientFd)
 {
-	
 	switch (i)
 	{
 		case 1 :
 		{
-			std::cout << "On lance NICK" << std::endl;
-			std::cout << "Parametre =" << parameter << std::endl;
+			// std::cout << "On lance NICK" << std::endl;
+			// std::cout << "c2.1.1\n";
+			// std::string message = commandObj->NICK(clientFd, this);
+			// if (message.find("nothing") == std::string::npos)
+			// {
+			// 	std::cout << "c2.1.2\n";
+			// 	i_send_message(clientFd,message);
+			// 	return ("WRONG NICK");
+			// }
+			//std::cout << "NICKNAME AFTER NICK IS " << (this->findClientBySocket(clientFd))->getNickName() << std::endl;
 			break ;
 		}
 		case 2 :
 		{
 			std::cout << "On lance PASS" << std::endl;
+			std::string message = commandObj->PASS(clientFd, this);
+			if (message.find("nothing") == std::string::npos)
+			{
+				i_send_message(clientFd,message);
+				return ("WRONG PASS");
+			}
 			break ;
 		}
 		case 3 :
 		{
+			//client* clientTmp;
+
+			//clientTmp = this->findClientBySocket(clientFd);
 			std::cout << "On lance USER" << std::endl;
+			std::cout << "c2.4.1\n";
+			std::string message = commandObj->USER(clientFd, this);
+			if (message.find("nothing") == std::string::npos)
+			{
+				i_send_message(clientFd,message);
+				return ("WRONG USER");
+			}
+			/*
+			std::cout << " -------USER INFO------ " << std::endl;
+			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
+			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
+			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
+			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
+			*/
 			break ;
 		}
 		case 4 :
@@ -382,14 +568,14 @@ void	Server::executeCmd(int i, int clientFd, std::string parameter)
 		}
 		case 8 :
 		{
-			// std::cout << "On lance JOIN" << std::endl;
+			std::cout << "On lance JOIN" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
 				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
-			commandObj->JOIN(client1, parameter, this);
+			commandObj->JOIN(client1, this);
 			break ;
 		}
 		case 9 :
@@ -429,7 +615,23 @@ void	Server::executeCmd(int i, int clientFd, std::string parameter)
 		}
 		case 16 :
 		{
-			std::cout << "On lance USER" << std::endl;
+			//client* clientTmp;
+
+			//clientTmp = this->findClientBySocket(clientFd);
+			std::cout << "On lance USER HOST" << std::endl;
+			std::string message = commandObj->USER(clientFd, this);
+			if (message.find("nothing") == std::string::npos)
+			{
+				i_send_message(clientFd,message);
+				return ("WRONG USER");
+			}
+			/*
+			std::cout << " -------USER INFO------ " << std::endl;
+			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
+			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
+			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
+			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
+			*/
 			break ;
 		}
 		default :
@@ -438,16 +640,7 @@ void	Server::executeCmd(int i, int clientFd, std::string parameter)
 			break ;
 		}
 	}
-	return ;
-}
-
-void	Server::i_handle_request(int i)
-{
-	if (requestParsing(i) == 0)
-		return ;
-	chooseAndExecuteAction(i);
-	this->M_requestVector.clear();
-	this->M_cmdMap.clear();
+	return ("nothing");
 }
 
 std::list<channel *> Server::getListOfChannels(void) const
@@ -457,7 +650,7 @@ std::list<channel *> Server::getListOfChannels(void) const
 
 void	Server::setNewChannel(channel *chan)
 {
-	if (!chan)
+	if(!chan)
 	{
 		std::cout << "Channel doesn't exist" << std::endl;
 		return ;
@@ -494,6 +687,32 @@ void	Server::addClientToChannel(client *client1, std::string parameter)
 	}
 	// std::cout << "C2" << std::endl;
 	return ;
+}
+
+
+bool	Server::checkChannel(void) const
+{
+	if (this->M_listOfChannels.empty())
+		return (false);
+	return (true);
+}
+
+void	Server::i_handle_request(int i)
+{
+	std::cout << "IM IN Handle CONNEXION\n";
+	if (requestParsing(i) == 0)
+	{
+		this->M_requestVector.clear();
+		this->M_cmdMap.clear();
+		close(i);
+		FD_CLR(i, &(this->M_struct->current_sockets));
+		return ;
+	}
+	chooseAndExecuteAction(i);
+	
+	this->M_requestVector.clear();
+	this->M_cmdMap.clear();
+	// this->M_args.clear();
 }
 
 int		Server::isAlpha(char c)
@@ -604,7 +823,12 @@ client *Server::findClientByNickName(std::string clientNickname)
 	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
 		temp = (*it)->getNickName();
 		if (temp.find(clientNickname) != std::string::npos)
+		{
+			std::cout << "c2.1.1.3\n";
+			std::cout << "NICK IS " << clientNickname << std::endl;
+			std::cout << "client nick name found is " << (*it)->getNickName() << std::endl;
 			return (*it);
+		}
 	}
 	return (NULL);
 }
@@ -628,14 +852,6 @@ void	Server::eraseClientFromList(std::string clientNickname)
 			
 	}
 }
-
-bool	Server::checkChannel(void) const
-{
-	if (this->M_listOfChannels.empty())
-		return (false);
-	return (true);
-}
-
 
 const char *Server::WrongPortException::what() const throw()
 {

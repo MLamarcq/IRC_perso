@@ -146,8 +146,8 @@ void	channel::printMap(void) const
 	std::cout << std::internal << std::setw(10) << "Is operator |" << std::endl;
 	while (it != ite)
 	{
-		std::cout << std::setw(10) << std::internal << this->_name << " | ";
-		//std::cout << "Le nom du channel = " << this->_name << std::endl;
+		std::cout << this->_name << " | ";
+		// std::cout << "Le nom du channel = " << this->_name << std::endl;
 		if (it->first->getNickName().size() > 10)
 			std::cout << std::setw(9) << std::internal << it->first->getNickName().substr(0, 9) << "." << "| ";
 		else
