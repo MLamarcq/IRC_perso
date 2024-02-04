@@ -108,7 +108,7 @@ class Server
 			//channel
 			std::list<channel *> getListOfChannels(void) const;
 			void				setNewChannel(channel *chan);
-			void				addClientToChannel(client *client1, std::string parameter);
+			int					addClientToChannel(client *client1, std::vector<std::string> parameter);
 			bool				checkChannel(void) const;
 
 

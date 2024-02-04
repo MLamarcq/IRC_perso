@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/02 15:07:42 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/04 13:55:10 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,74 +213,102 @@ std::string		command::PASS(int fd, Server* serv)
 std::string		command::JOIN(client *client1, Server *serv)
 {
 	std::vector<std::string> temp;
+	std::string chan;
 	temp = serv->M_cmdMap["JOIN"];
+	int check = 0;
 	if (temp.empty())
 	{
 		std::cout << "To join a channel, please enter it's name" << std::endl;
-		return (ERR_NOSUCHCHANNEL(client1->getNickName(), this->));
+		return (" ");
 	}
-	if (client1->getBan() == true)
-		return ()
-	if (temp.size() > 2)
-	{
-		std::string chaine;
-		for (std::vector<std::string>::iterator it = temp.begin(); it != temp.end(); ++it)
-			chaine += *it;
-		return (ERR_NEEDMOREPARAMS(client1->getNickName(), chaine));
-	}
+	// if (client1->getBan() == true)
+	// 	return ();
+	// for (size_t li = 0; li < temp.size(); li++)
+	// 	std::cout << "temp[" << li << "] = " << temp[li] << std::endl;
+	// std::cout << "temp.size() = " << temp.size() << std::endl;
+	// if (temp.size() > 2)
+	// {
+	// 	std::string chaine;
+	// 	for (std::vector<std::string>::iterator it = temp.begin(); it != temp.end(); ++it)
+	// 		chaine += *it;
+	// 	return (ERR_NEEDMOREPARAMS(client1->getNickName(), chaine));
+	// }
 	if (serv->checkChannel() == false)
 	{
 		std::cout << "No channel in the list, it will be the first !" << std::endl;
 		channel *new_one = new channel;
 		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
 		//ou utiliser QUIT
+		// std::vector<std::string>::iterator s1 = temp.begin();
+		// std::vector<std::string>::iterator s2 = temp.end();
+		// while (s1 != s2)
+		// {
+		// 	std::cout << "la chaine = " << (*s1) << " sa taille = " << (*s1).size() << std::endl;
+		// 	s1++;
+		// }
 		new_one->setName(temp[0]);
-		if (new_one->setPassword() == 0)
-		{
-			delete new_one;
-			std::cout << "ERROR" << std::endl;
-			return (" ");
-		}
+		if (temp.size() == 2)
+			new_one->setPassword(temp[1]);
 		new_one->setListofClient(client1);
 		new_one->setOperators(client1);
 		serv->setNewChannel(new_one);
+		std::cout << "Channel name = " << new_one->getName() << std::endl; //"d'une taille de : " << new_one->getName().size() << std::endl;
+		std::cout << "Channel password = " << new_one->getPassword() << std::endl;
 		return (" ");
 	}
 	// // std::cout << "On passe la" << std::endl;
-	// std::list<channel *> listOfChannels = serv->getListOfChannels();
-	// std::list<channel *>::iterator it = listOfChannels.begin();
-	// std::list<channel *>::iterator ite = listOfChannels.end();
-	// bool found = false;
-	// while (it != ite)
-	// {
-	// 	// std::cout << "Parameter = " << parameter << std::endl;
-	// 	// std::cout << "Channel name = " << (*it)->getName() << std::endl;
-	// 	if ((*it)->getName().compare(parameter) == 0)
-	// 	{
-	// 		std::cout << "Channel found !" << std::endl;
-	// 		found = true;
-	// 		break ;
-	// 	}
-	// 	it++;
-	// }
-	// if (found == false)
-	// {
-	// 	std::cout << "Channel doesn't exist, let's create it" << std::endl;
-	// 	channel *new_one = new channel;
-	// 	//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
-	// 	new_one->setName(parameter);
-	// 	if (new_one->setPassword() == 0)
-	// 	{
-	// 		delete new_one;
-	// 		// std::cout << "ERROR" << std::endl;
-	// 		return (" ");
-	// 	}
-	// 	new_one->setListofClient(client1);
-	// 	new_one->setOperators(client1);
-	// 	serv->setNewChannel(new_one);
-	// 	return (" ");
-	// }
-	// serv->addClientToChannel(client1, parameter);
+	std::list<channel *> listOfChannels = serv->getListOfChannels();
+	std::list<channel *>::iterator it = listOfChannels.begin();
+	std::list<channel *>::iterator ite = listOfChannels.end();
+	bool found = false;
+	while (it != ite)
+	{
+		// std::cout << "Parameter = " << parameter << std::endl;
+		std::cout << "Channel name = " << (*it)->getName() << std::endl; //" d'une taille de : " << (*it)->getName().size() << std::endl;
+		std::cout << "temp[0] = " << temp[0] << std::endl; //" d'une taille de : " << temp.size() << std::endl;
+		std::cout << "res du compare : " << (*it)->getName().compare(temp[0]) << std::endl;
+		if ((*it)->getName().compare(temp[0]) == 0)
+		{
+			std::cout << "Channel found !" << std::endl;
+			chan = temp[0];
+			found = true;
+			break ;
+		}
+		it++;
+	}
+	if (found == false)
+	{
+		channel *new_one = new channel;
+		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
+		//ou utiliser QUIT
+		new_one->setName(temp[0]);
+		if (temp.size() == 2)
+			new_one->setPassword(temp[1]);
+		new_one->setListofClient(client1);
+		new_one->setOperators(client1);
+		serv->setNewChannel(new_one);
+		std::cout << "Channel name = " << new_one->getName() << std::endl;
+		std::cout << "Channel password = " << new_one->getPassword() << std::endl;
+		return (" ");
+	}
+	check = serv->addClientToChannel(client1, temp);
+	switch (check)
+	{
+		case 0 :
+		{
+			break ;
+		}
+		case 1 :
+		{
+			std::cout << "Welcome to the channel !" << std::endl;
+			break ;
+		}
+		default :
+		{
+			return (ERR_BADCHANNELKEY(client1->getNickName(), chan));
+			break ;
+		}
+	}
 	// // std::cout << "Parameter in JOIN = " << parameter << std::endl;
 	// // std::cout << "Client1 nickname in JOIN : " << client1->getNickName() << std::endl;
 	// // std::cout << "Client1 FD in JOIN : " << client1->getsocketFd() << std::endl;

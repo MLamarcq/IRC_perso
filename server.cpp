@@ -568,6 +568,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 8 :
 		{
+			
 			std::cout << "On lance JOIN" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
@@ -575,7 +576,12 @@ std::string	Server::executeCmd(int i, int clientFd)
 				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
-			commandObj->JOIN(client1, this);
+			std::string message = commandObj->JOIN(client1, this);
+			if (message.find("nothing") == std::string::npos)
+			{
+				i_send_message(clientFd,message);
+				return ("WRONG USER");
+			}
 			break ;
 		}
 		case 9 :
@@ -656,37 +662,62 @@ void	Server::setNewChannel(channel *chan)
 		return ;
 	}
 	this->M_listOfChannels.push_back(chan);
+	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
+	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
+	while (it != ite)
+	{
+		std::cout << "le channel : " << (*it)->getName() << std::endl;
+		std::cout << "le mot de passe : " << (*it)->getPassword() << std::endl;
+		it++;
+	}
 	return ;
 }
 
-void	Server::addClientToChannel(client *client1, std::string parameter)
+int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 {
 	if (!client1)
 	{
 		std::cout << "Client doesn't exist" << std::endl;
-		return ;
+		return (0);
 	}
-	if (parameter.empty())
-	{
-		std::cout << "Channel name empty, please give a complete name" << std::endl;
-		return ;
-	}
+	// if (parameter.empty())
+	// {
+	// 	std::cout << "Channel name empty, please give a complete name" << std::endl;
+	// 	return ;
+	// }
 	// std::cout << "On arrive bien jusque la" << std::endl;
 	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
 	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
 	while (it != ite)
 	{
-		if ((*it)->getName().compare(parameter) == 0)
+		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			(*it)->addClientToTheChannel(client1);
-			(*it)->printMap();
+			std::cout << "Password in last = " << (*it)->getPassword() << std::endl;
+			// std::cout << "Temp[1] in last = " << temp[1] << std::endl;
+			std::cout << "resultat du empty : " << (*it)->getPassword().empty() << std::endl;
+			std::cout << "resultat du compare : " << (*it)->getPassword().compare(temp[1]) << std::endl;
+			if ((*it)->getPassword().empty() == 0 && (*it)->getPassword().compare(temp[1]) == 0)
+			{
+				(*it)->addClientToTheChannel(client1);
+				(*it)->printMap();
+				return (1);
+			}
+			else if ((*it)->getPassword().empty() && temp.size() < 2)
+			{
+				(*it)->addClientToTheChannel(client1);
+				(*it)->printMap();
+				return (1);
+			}
+			else
+				return (2);
+				// std::cout << "Wrong password, can't join the channel" << std::endl;
 			// std::cout << "C1" << std::endl;
 			break ;
 		}
 		it++;
 	}
 	// std::cout << "C2" << std::endl;
-	return ;
+	return (1);
 }
 
 

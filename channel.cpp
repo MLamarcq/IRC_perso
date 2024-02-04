@@ -1,6 +1,6 @@
 #include "channel.hpp"
 
-channel::channel() : _name("default"), _pswd("1234")
+channel::channel()
 {
 	return ;
 }
@@ -32,38 +32,65 @@ std::string	channel::getName(void) const
 	return (this->_name);
 }
 
+std::string channel::getPassword(void) const
+{
+	return (this->_pswd);
+}
+
 void	channel::setName(std::string parameter)
 {
+	//std::cout << parameter << " = " << parameter.size() << std::endl;
+	// std::cout << "On regarde chaque caractere quand pas de mdp avant" << std::endl;
+	// size_t i = 0;
+	// while (i < parameter.size())
+	// {
+	// 	std::cout << "parameter[" << i << "] = " << parameter[i] << std::endl;
+	// 	i++;
+	// }
+	size_t space = parameter.find('\r');
+	if (space != std::string::npos)
+	{
+		std::cout << " trouve !" << std::endl;
+		parameter = parameter.substr(0, space);
+	}
+	// std::cout << "On regarde chaque caractere quand pas de mdp apres" << std::endl;
+	// i = 0;
+	// while (i < parameter.size())
+	// {
+	// 	std::cout << "parameter[" << i << "] = " << parameter[i] << std::endl;
+	// 	i++;
+	// }
 	this->_name = parameter;
 	return ;
 }
-int	channel::setPassword(void)
+void	channel::setPassword(std::string password)
 {
-	std::string password;
-	bool toggle = false;
-	std::cout << "Please choose a password for this channel (4 digits): ";
-	while (toggle == false)
-	{
-		if (!std::getline(std::cin, password))
-		{
-			std::cout << "End of file called. Channel setup failed. Cancel all actions" << std::endl;
-			return (0);
-		}
-		if (password.empty())
-		{
-			std::cout << "Empty password. Please ty again : ";
-		}
-		if (isDigit(password) == 1)
-		{
-			this->_pswd = password;
-			// std::cout << "Password for " << this->_name << "set. It is : " << this->_pswd << std::endl;
-			toggle = true;
-		}
-		password.erase();
-	}
-	// std::cout << "Le nom du channel est : " << this->_name << std::endl;
-	// std::cout << "Le mot de passe est : " << this->_pswd << std::endl;
-	return (1);
+	// std::string password;
+	// bool toggle = false;
+	// std::cout << "Please choose a password for this channel (4 digits): ";
+	// while (toggle == false)
+	// {
+	// 	if (!std::getline(std::cin, password))
+	// 	{
+	// 		std::cout << "End of file called. Channel setup failed. Cancel all actions" << std::endl;
+	// 		return (0);
+	// 	}
+	// 	if (password.empty())
+	// 	{
+	// 		std::cout << "Empty password. Please ty again : ";
+	// 	}
+	// 	if (isDigit(password) == 1)
+	// 	{
+	// 		this->_pswd = password;
+	// 		// std::cout << "Password for " << this->_name << "set. It is : " << this->_pswd << std::endl;
+	// 		toggle = true;
+	// 	}
+	// 	password.erase();
+	// }
+	// // std::cout << "Le nom du channel est : " << this->_name << std::endl;
+	// // std::cout << "Le mot de passe est : " << this->_pswd << std::endl;
+	this->_pswd = password;
+	return ;
 }
 
 void	channel::setListofClient(client *client1)
@@ -129,8 +156,8 @@ void	channel::addClientToTheChannel(client *client1)
 		std::cout << "Client doesn't exist" << std::endl;
 		return ;
 	}
-	if (enterPassword() == 0)
-		return ;
+	// if (enterPassword() == 0)
+	// 	return ;
 	this->_listOfClients[client1] = false;
 	return ;
 }

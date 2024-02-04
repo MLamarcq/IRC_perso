@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/01 12:44:08 by mlamarcq         ###   ########.fr       */
+/*   Updated: 2024/02/02 15:43:17 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,11 @@ class channel {
 
 		// si join 1ere fois -> client operator
 		std::string	getName(void) const;
+		std::string getPassword(void) const;
 
 		
 		void		setName(std::string parameter);
-		int			setPassword(void);
+		void		setPassword(std::string password);
 		void		setListofClient(client  *client1);
 		void		setOperators(client *client1);
 
