@@ -212,6 +212,7 @@ void	Server::i_handle_first_connexion(void)
 	clientPtr = this->createClient();
 	clientPtr->setNickName("NotSetYet");
 	clientPtr->setsocketFd(this->M_struct->clientSockFd);
+	std::cout << "FIRST CONNEXION SOCKET FD = " << clientPtr->getsocketFd() << std::endl;
 	clientPtr->setIp(inet_ntoa(this->M_struct->sockStructClient.sin_addr));
 	clientPtr->setPort(ntohs(this->M_struct->sockStructClient.sin_port));
 	//ajouter le client dans la liste
@@ -322,6 +323,7 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 		//std::cout << "TMP IS "<< tmp << std::endl;
 		std::string string_copy = tmp;
 		std::string temp;
+		std::cout << "string_copy IS " << string_copy << std::endl;
 		token = string_copy.find('\n');
 		if (token == std::string::npos)
 		{
@@ -329,7 +331,7 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 			return (0);
 		}
 		temp = string_copy.substr(0, token);
-		//std::cout << "TEMP IS " << temp << std::endl;
+		std::cout << "TEMP IS " << temp << std::endl;
 		this->M_requestVector.push_back(temp);
 		temp.erase();
 		//std::cout << "TEMP AFTER ERASE IS " << temp << std::endl;
@@ -548,6 +550,8 @@ std::string	Server::executeCmd(int i, int clientFd)
 		case 4 :
 		{
 			std::cout << "On lance MODE" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			commandObj->MODE(client1, this);
 			break ;
 		}
 		case 5 :
@@ -576,12 +580,23 @@ std::string	Server::executeCmd(int i, int clientFd)
 				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
-			std::string message = commandObj->JOIN(client1, this);
-			if (message.find("nothing") == std::string::npos)
+			int sendReturn = commandObj->JOIN(client1, this);
+			if (sendReturn == -1)
 			{
-				i_send_message(clientFd,message);
-				return ("WRONG USER");
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
 			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
+			// if (message.find("nothing") == std::string::npos)
+			// {
+			// 	i_send_message(clientFd,message);
+			// 	std::cout << "On va bien ici" << std::endl;
+			// 	return ("WRONG USER");
+			// }
 			break ;
 		}
 		case 9 :
@@ -686,30 +701,43 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 	// 	return ;
 	// }
 	// std::cout << "On arrive bien jusque la" << std::endl;
+
 	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
 	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
 	while (it != ite)
 	{
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
+			if ((*it)->getNbrOfClients() >= (*it)->getClientLimit())
+			{
+				std::cout << "Limit of client reach, Can't join channel" << std::endl;
+				return (2);
+			}
 			std::cout << "Password in last = " << (*it)->getPassword() << std::endl;
 			// std::cout << "Temp[1] in last = " << temp[1] << std::endl;
 			std::cout << "resultat du empty : " << (*it)->getPassword().empty() << std::endl;
-			std::cout << "resultat du compare : " << (*it)->getPassword().compare(temp[1]) << std::endl;
-			if ((*it)->getPassword().empty() == 0 && (*it)->getPassword().compare(temp[1]) == 0)
+			if ((*it)->getPassword().empty() == 0 && temp.size() >= 2)
 			{
-				(*it)->addClientToTheChannel(client1);
-				(*it)->printMap();
-				return (1);
+				std::cout << "resultat du compare : " << (*it)->getPassword().compare(temp[1]) << std::endl;
+				if ((*it)->getPassword().compare(temp[1]) == 0)
+				{
+					(*it)->addClientToTheChannel(client1);
+					(*it)->increaseNbrCLient();
+					(*it)->printMap();
+					return (1);
+				}
+				else
+					return (3);
 			}
 			else if ((*it)->getPassword().empty() && temp.size() < 2)
 			{
 				(*it)->addClientToTheChannel(client1);
+				(*it)->increaseNbrCLient();
 				(*it)->printMap();
 				return (1);
 			}
 			else
-				return (2);
+				return (3);
 				// std::cout << "Wrong password, can't join the channel" << std::endl;
 			// std::cout << "C1" << std::endl;
 			break ;

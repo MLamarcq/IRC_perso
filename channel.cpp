@@ -2,6 +2,8 @@
 
 channel::channel()
 {
+	this->_nbrClients = 0;
+	this->_clientLimit = 5;
 	return ;
 }
 
@@ -37,9 +39,25 @@ std::string channel::getPassword(void) const
 	return (this->_pswd);
 }
 
-void	channel::setName(std::string parameter)
+int			channel::getNbrOfClients(void) const
 {
-	//std::cout << parameter << " = " << parameter.size() << std::endl;
+	return (this->_nbrClients);
+}
+
+int			channel::getClientLimit(void) const
+{
+	return (this->_clientLimit);
+}
+
+void	channel::increaseNbrCLient(void)
+{
+	this->_nbrClients++;
+	return ;
+}
+
+int	channel::setName(std::string parameter)
+{
+	std::cout << "parameter = " << parameter << std::endl;
 	// std::cout << "On regarde chaque caractere quand pas de mdp avant" << std::endl;
 	// size_t i = 0;
 	// while (i < parameter.size())
@@ -47,11 +65,26 @@ void	channel::setName(std::string parameter)
 	// 	std::cout << "parameter[" << i << "] = " << parameter[i] << std::endl;
 	// 	i++;
 	// }
-	size_t space = parameter.find('\r');
-	if (space != std::string::npos)
+	if (parameter.size() > 200)
+	{
+		std::cout << "+ de 200" << std::endl;
+		return (0);
+	}
+	size_t space = parameter.find(' ');
+	size_t coma = parameter.find(',');
+	std::cout << "coma = " << coma << std::endl;
+	size_t sound = parameter.find('\a');
+	if (space != std::string::npos || coma != std::string::npos || sound != std::string::npos)
+	{
+		std::cout << "ici" << std::endl;
+		this->_name = parameter;
+		return (0);
+	}
+	size_t r = parameter.find('\r');
+	if (r != std::string::npos)
 	{
 		std::cout << " trouve !" << std::endl;
-		parameter = parameter.substr(0, space);
+		parameter = parameter.substr(0, r);
 	}
 	// std::cout << "On regarde chaque caractere quand pas de mdp apres" << std::endl;
 	// i = 0;
@@ -61,7 +94,7 @@ void	channel::setName(std::string parameter)
 	// 	i++;
 	// }
 	this->_name = parameter;
-	return ;
+	return (1);
 }
 void	channel::setPassword(std::string password)
 {

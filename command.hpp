@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/02 15:11:25 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/05 14:40:49 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,14 +85,16 @@ class command {
 		std::string		PART();
 		std::string		TOPIC();
 		std::string		KICK();
-		std::string		MODE();
+		int				MODE(client *client1, Server *serv);
 		std::string		PRIVMSG();
 		std::string		NOTICE();
 		std::string		KILL();
 		std::string		WALLOPS();
-		std::string		JOIN(client *client1, Server *serv);
+		int		JOIN(client *client1, Server *serv);
 
 		std::string		bot();
+
+		std::vector<std::string>	parsTemp(std::vector<std::string> temp);
 
 
 };

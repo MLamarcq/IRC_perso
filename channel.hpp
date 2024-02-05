@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/02 15:43:17 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/05 15:29:36 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,12 @@ class channel {
 		// si join 1ere fois -> client operator
 		std::string	getName(void) const;
 		std::string getPassword(void) const;
+		int			getClientLimit(void) const;
+		int			getNbrOfClients(void) const;
+		void		increaseNbrCLient(void);
 
 		
-		void		setName(std::string parameter);
+		int			setName(std::string parameter);
 		void		setPassword(std::string password);
 		void		setListofClient(client  *client1);
 		void		setOperators(client *client1);
@@ -50,9 +53,11 @@ class channel {
 	
 		// std::list<client *>	_listOfClients;
 		// std::list<client *>	_operators;
+		int						_clientLimit;
+		int						_nbrClients;
 		std::map<client *, bool> _listOfClients;
-		std::string			_name;
-		std::string			_pswd;
+		std::string				_name;
+		std::string				_pswd;
 };
 
 #endif
