@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/08 12:23:11 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/08 14:13:36 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -486,6 +486,7 @@ int		command::MODE(client *client1, Server *serv)
 	temp = parsTemp(serv->M_cmdMap["MODE"]);
 	bool toggle = false;
 	std::string recup, message;
+	int check = 0;
 	size_t i = 0;
 	
 	while (i < temp.size())
@@ -511,28 +512,30 @@ int		command::MODE(client *client1, Server *serv)
 	}
 	if (*it && toggle == true)
 	{
+		bool tunnel = true;
 		//virifier avant si il existe un - ou un + sinon le message est mal interprete
 		// channel *chan = (*it);
 		if (temp[1].size() > 2)
 		{
-			std::cout << "WRONG FIRST ARG" << std::endl;
-			message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
-			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+			tunnel = false;
+			check = 461;
+			// std::cout << "WRONG FIRST ARG" << std::endl;
+			// message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
+			// return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		}
 		// std::cout << "chan name = " << chan->getName() << std::endl;
 		// std::cout << "chan password = " << chan->getPassword() << std::endl;
 		std::map<client *, bool> map2 = (*it)->getListOfClients();
 		std::map<client *, bool>::iterator m_it = map2.begin();
 		std::map<client *, bool>::iterator m_ite = map2.end();
-		while (m_it != m_ite)
+		while (m_it != m_ite && tunnel == true)
 		{
 			if (m_it->first->getsocketFd() == client1->getsocketFd())
 			{
 				if (m_it->second == false)
 				{
-					message = ERR_CHANOPRIVSNEEDED(temp[0]);
-					std::cout << "message = " << message << std::endl;
-					return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
+					check = 482;
+					break ;
 				}
 				else
 				{
@@ -561,6 +564,38 @@ int		command::MODE(client *client1, Server *serv)
 		// }
 		// chan->getListOfClients().clear();
 		// std::cout << "La map se clear bien" << std::endl;
+	}
+	else
+		check = 100;
+	switch (check)
+	{
+		case 0 :
+		{
+			std::cout << "Welcome to the channel !" << std::endl;
+			break ;
+		}
+		case 461 :
+		{
+			message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
+			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+		}
+		case 482 :
+		{
+			std::cout << "NOM DU CHANNEL 482 = " << (*it)->getName() << std::endl;
+			std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
+			std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
+			message = ERR_CHANOPRIVSNEEDED(temp[0]);
+			std::cout << "Message = " << message << std::endl;
+			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+			std::cout << rtn << std::endl;
+			return (rtn);
+			//break ;
+		}
+		default :
+		{
+			std::cout << "ERROR" << std::endl;
+			break ;
+		}
 	}
 	(void)client1;
 	return (0);
