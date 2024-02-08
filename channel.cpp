@@ -3,7 +3,7 @@
 channel::channel()
 {
 	this->_nbrClients = 0;
-	this->_clientLimit = 5;
+	this->_clientLimit = 2;
 	return ;
 }
 
@@ -20,6 +20,33 @@ channel::channel(const channel& copy)
 
 channel & channel::operator=(const channel& copy)
 {
+	if (this!= &copy)
+	{
+		if (copy.getClientLimit())
+			this->_clientLimit = copy.getClientLimit();
+		if (copy.getNbrOfClients())
+			this->_nbrClients = copy.getNbrOfClients();
+		if (copy.getClientLimit())
+			this->_name = copy.getName();
+		if (copy.getClientLimit())
+			this->_pswd = copy.getPassword();
+		for (std::map<client *, bool>::iterator m_it = _listOfClients.begin(); m_it != _listOfClients.end(); ++m_it)
+		{
+			delete m_it->first;
+		}
+		this->_listOfClients.clear();
+		std::map<client *, bool>::iterator it = copy.getListOfClients().begin();
+		std::map<client *, bool>::iterator ite = copy.getListOfClients().begin();
+		while (it != ite)
+		{
+			client *copy2 = copyClient(it->first);
+			if (copy2)
+			{
+				this->_listOfClients[copy2] = it->second;
+			}
+			it++;
+		}
+	}
 	(void)copy;
 	return (*this);
 }
@@ -27,6 +54,27 @@ channel & channel::operator=(const channel& copy)
 channel::~channel()
 {
 	return ;
+}
+
+client	*channel::copyClient(client *original)
+{
+	if (!original)
+	{
+		std::cout << "Client doesn't exist" << std::endl;
+		return (NULL);
+	}
+	client *copy = new client;
+	copy->setNickName(original->getNickName());
+	copy->setRealName(original->getRealName());
+	copy->setUserName(original->getUserName());
+	copy->setHostName(original->getHostName());
+	copy->setOperatorStatus(original->getOperatorStatus());
+	copy->setWelcomeMessageSent(original->isWelcomeMessageSent());
+	copy->setsocketFd(original->getsocketFd());
+	copy->setPort(original->getPort());
+	copy->setIp(original->getIp());
+	copy->setNumberOfChannelJoined(original->getNumberOfChannelJoined());
+	return (copy);
 }
 
 std::string	channel::getName(void) const
@@ -53,6 +101,11 @@ void	channel::increaseNbrCLient(void)
 {
 	this->_nbrClients++;
 	return ;
+}
+
+std::map<client*, bool> channel::getListOfClients(void) const
+{
+	return (this->_listOfClients);
 }
 
 int	channel::setName(std::string parameter)
@@ -220,9 +273,30 @@ void	channel::printMap(void) const
 	}
 	// std::cout << "Le nom du channel = " << this->_name << std::endl;
 	// std::cout << std::setw(10) << std::internal << "Yes |" << std::endl;
-    // std::cout << std::setw(10) << std::internal << "No |" << std::endl;
+	// std::cout << std::setw(10) << std::internal << "No |" << std::endl;
 	return ;
 }
+
+int	channel::setChannelFirstTime(client *client1, Server *serv, channel *new_one, std::vector<std::string> temp)
+{
+	if (new_one->setName(temp[0]) == 0)
+	{
+		serv->setChanName(new_one->getName());
+		std::cout << "ERROR CHANNEL" << std::endl;
+		std::cout << "COMMAND JOIN SOCKET FD = " << client1->getsocketFd() << std::endl;
+		// std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), new_one->getName());
+		// std::cout << "le message = " << message << std::endl;
+		return (403);
+	}
+	if (temp.size() == 2)
+		new_one->setPassword(temp[1]);
+	new_one->setListofClient(client1);
+	new_one->setOperators(client1);
+	serv->setNewChannel(new_one);
+	new_one->increaseNbrCLient();
+	return (0);
+}
+
 
 int	channel::isDigit(std::string str) const
 {

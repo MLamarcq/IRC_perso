@@ -71,6 +71,8 @@ class Server
 			//Getters and init constructor
 			std::string			getPort(void) const;
 			std::string			getPass_Wd(void) const;
+			std::string			getChanName(void) const;
+			void				setChanName(std::string name);
 			void				Copy_Struct(Server const &rhs);
 			void				init_struct(void);
 			void				fill_commands_vector(void);
@@ -111,6 +113,9 @@ class Server
 			int					addClientToChannel(client *client1, std::vector<std::string> parameter);
 			bool				checkChannel(void) const;
 
+
+			void 				handle_sigpipe(int signal);
+			static void			handle_sigpipe_static(int signal, Server* serverInstance);
 
 			//geter for la structure
 
@@ -174,10 +179,12 @@ class Server
 			//t_serv										*M_struct;
 			command											*commandObj;
 			std::list<channel *> 							M_listOfChannels;
+			std::string										M_chanName;
 };
 
 std::string			intTostring(int number);
 std::vector<std::string> split_string_v2(const std::string& s, char delimiter);
+std::string const	getTime();
 
 
 #endif

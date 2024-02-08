@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/05 14:40:49 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/07 14:35:58 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 #define COMMAND_HPP
 
 # define CLRF	"\r\n"
-# define SERVER_NAME				"ircserv"
-# define SERVER_HOSTNAME			std::string(SERVER_NAME) + ".fr"
+//# define SERVER_NAME				"ircserv"
+# define SERVER_NAME				"localhost"
+//# define SERVER_HOSTNAME			std::string(SERVER_NAME) + ".fr"
+#define SERVER_HOSTNAME				std::string("localhost")
 # define SERVER_VERSION				"v4.2"
 # define CHANNEL_MODES				"klnt"
 # define USER_MODES					"io"
@@ -55,7 +57,7 @@
 # define ERR_BANNEDFROMCHAN(nick, chan)				RPL_PREFIX("474", nick) + " " + chan + " :Bannded from channel (+b)" + CLRF
 # define ERR_BADCHANNELKEY(nick, chan)				RPL_PREFIX("475", nick) + " " + chan + " :Cannot join channel (+k)" + CLRF
 # define ERR_NOPRIVILEGES(nick)						RPL_PREFIX("481", nick) + " :Permission Denied- You're not an IRC operator" + CLRF
-# define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + " " + channel + " :You're not channel operator" + CLRF
+# define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + " " + channel + " :You're not channel operator\r\n"
 # define ERR_NOOPERHOST(nick)						RPL_PREFIX("491", nick) + " :No O-lines for your host" + CLRF
 # define ERR_UMODEUNKNOWNFLAG(target)				RPL_PREFIX("501", "") + " " + target + " :Unknown MODE flag" + CLRF
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
@@ -78,7 +80,7 @@ class command {
 		std::string		PASS(int fd, Server *serv);
 		std::string		NICK(int fd, Server *serv);
 		std::string		USER(int fd, Server *serv);
-		std::string		PING();
+		std::string		PING(int fd, Server *serv);
 		std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
@@ -95,6 +97,8 @@ class command {
 		std::string		bot();
 
 		std::vector<std::string>	parsTemp(std::vector<std::string> temp);
+
+		int	handleCmd(client *client1, Server *serv, std::string cmd);
 
 
 };

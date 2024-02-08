@@ -45,3 +45,10 @@ IMRANE CHANGEMENT :
 - Rajout de la maccro BANNEDFROMCHAN pour la gestion d'erreur dans JOIN
 - Changement du prototype de executeCmd -> plus de parameter, mieux pour les fonctions d'Imrane
 - Rajout de "tmp = tmp.substr(token + 1, tmp.size())" dans fillVectorRequest -> permet de ne pas prendre en compte l'espace
+
+
+
+04_05_06/02/2024 : Mael
+
+- Fonction JOIN terminee -> mais encore un petit soucis avec envoi d'erreur concernant les mauvais noms de channel
+- Commencement de MODE -> Creation de l'operateur "=" dans channel + nouvelles fonctions pour copie profonde
