@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/08 14:13:36 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/09 16:01:29 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 command::command()
 {
-
+	//this->M_charErr = "";
 }
 command::command(const command& copy)
 {
@@ -37,15 +37,30 @@ command::~command()
 
 }
 
+// std::string		command::getCharErr(void) const
+// {
+// 	return (this->M_charErr);
+// }
+
+// void			command::setCharErr(std::string err)
+// {
+// 	this->M_charErr = err;
+// 	return ;
+// }
+
 std::string		command::PING(int fd, Server *serv)
 {
 	(void)serv;
 	(void)fd;
-	std::string message = ":localhost ";
-	message.append("PONG ");
-	message.append("localhost ");
-	message.append(":localhost\r\n");
-	return (message);
+	client * tempClient;
+	tempClient = serv->findClientBySocket(fd);
+
+	//std::string message = ":localhost ";
+	//message.append("PONG ");
+	//message.append("localhost ");
+	//message.append(":localhost\r\n");
+	(void)tempClient;
+	return (PONG(tempClient->getNickName()));
 }
 
 std::string		command::QUIT(int fd, Server* serv)
@@ -91,7 +106,7 @@ std::string		command::USER(int fd, Server* serv)
 		{
 			//std::cout << "c3\n";
 			std::cout << "c2.4.1.3\n";
-			temp = serv->M_cmdMap["USER"];
+			temp = parsTemp(serv->M_cmdMap["USER"]);
 			// char **tabSplit = ft_split(temp.c_str(), ' ');
 			// int count = std::count(temp.begin(), temp.end(), ' ');
 			if (temp.size() < 4)
@@ -104,11 +119,11 @@ std::string		command::USER(int fd, Server* serv)
 			std::cout << "c2.4.1.4\n";
 			//std::cout << "TABSPLIT[0] = " << tabSplit[0] << std::endl;
 
-		    if (serv->findClientByUserName(temp[0]) != NULL)
-			{
-				std::cout << "USER ALREADY EXIST" << std::endl;
-				return (ERR_ALREADYREGISTRED(temp[0]));
-			}
+		    // if (serv->findClientByUserName(temp[0]) != NULL)
+			// {
+			// 	std::cout << "USER ALREADY EXIST" << std::endl;
+			// 	return (ERR_ALREADYREGISTRED(temp[0]));
+			// }
 			std::cout << "c2.4.1.5\n";
 			clientTmp->setUserName(temp[0].append(clientTmp->getNickName()));
 			std::cout << "c2.4.1.6\n";
@@ -134,7 +149,7 @@ std::string		command::USER(int fd, Server* serv)
 		{
 			//std::cout << "c4\n";
 			std::cout << "c2.4.1.6\n";
-			temp = serv->M_cmdMap["userhost"];
+			temp = parsTemp(serv->M_cmdMap["userhost"]);
 			// char **tabSplit = ft_split(temp.c_str(), ' ');
 			// int count = std::count(temp.begin(), temp.end(), ' ');
 			if (temp.size() < 4)
@@ -147,8 +162,11 @@ std::string		command::USER(int fd, Server* serv)
 			for (size_t i = 0; i < temp.size(); i++)
 				std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 			std::cout << "c2.4.1.7\n";
-			//if (serv->findClientByUserName(tabSplit[0]) != NULL)
-			  //  return (ERR_ALREADYREGISTRED(tabSplit[0]))f;
+			// if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName()) ) != NULL)
+			// {
+			// 	std::cout << "USER ALREADY EXIST" << std::endl;
+			// 	return (ERR_ALREADYREGISTRED(temp[0]));
+			// }
 			std::cout << "c2.4.1.8\n";
 			clientTmp->setUserName(temp[0].append(clientTmp->getNickName()));
 			clientTmp->setMode(temp[1]);
@@ -227,7 +245,7 @@ std::string		command::NICK(int fd, Server* serv)
 	std::vector<std::string> temp;
 	std::string arg;
 	client* clientTmp;
-	temp = serv->M_cmdMap["NICK"];
+	temp = parsTemp(serv->M_cmdMap["NICK"]);
 	//size_t notSpace = temp.find_first_not_of(' ');
 	//size_t end = temp.find(' ', notSpace);
 	std::cout << "c2.1.1.1\n";
@@ -422,62 +440,63 @@ int		command::JOIN(client *client1, Server *serv)
 		else
 			check = serv->addClientToChannel(client1, temp);
 	}
-	switch (check)
-	{
-		case 0 :
-		{
-			std::cout << "Welcome to the channel !" << std::endl;
-			break ;
-		}
-		case 403 :
-		{
-			chan = serv->getChanName();
-			std::cout << "NOM DU CHANNEL 403 = " << chan << std::endl;
-			std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-			std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-			std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), chan);
-			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-			std::cout << rtn << std::endl;
-			return (rtn);
-			//break ;
-		}
-		case 471 :
-		{
-			chan = serv->getChanName();
-			std::cout << "NOM DU CHANNEL 471 = " << chan << std::endl;
-			std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-			std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-			std::string message = ERR_CHANNELISFULL(client1->getNickName(), chan);
-			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-			std::cout << rtn << std::endl;
-			return (rtn);
-			//break ;
-		}
-		case 475 :
-		{
-			chan = serv->getChanName();
-			std::cout << "NOM DU CHANNEL 475 = " << chan << std::endl;
-			std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-			std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-			std::string message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
-			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-			std::cout << rtn << std::endl;
-			return (rtn);
-			//break ;
-		}
-		default :
-		{
-			std::cout << "ERROR" << std::endl;
-			break ;
-		}
-	}
+	// switch (check)
+	// {
+	// 	case 0 :
+	// 	{
+	// 		std::cout << "Welcome to the channel !" << std::endl;
+	// 		break ;
+	// 	}
+	// 	case 403 :
+	// 	{
+	// 		chan = serv->getChanName();
+	// 		std::cout << "NOM DU CHANNEL 403 = " << chan << std::endl;
+	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
+	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
+	// 		std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), chan);
+	// 		std::cout << message << std::endl;
+	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	// 		std::cout << rtn << std::endl;
+	// 		return (rtn);
+	// 		//break ;
+	// 	}
+	// 	case 471 :
+	// 	{
+	// 		chan = serv->getChanName();
+	// 		std::cout << "NOM DU CHANNEL 471 = " << chan << std::endl;
+	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
+	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
+	// 		std::string message = ERR_CHANNELISFULL(client1->getNickName(), chan);
+	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	// 		std::cout << rtn << std::endl;
+	// 		return (rtn);
+	// 		//break ;
+	// 	}
+	// 	case 475 :
+	// 	{
+	// 		chan = serv->getChanName();
+	// 		std::cout << "NOM DU CHANNEL 475 = " << chan << std::endl;
+	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
+	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
+	// 		std::string message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
+	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	// 		std::cout << rtn << std::endl;
+	// 		return (rtn);
+	// 		//break ;
+	// 	}
+	// 	default :
+	// 	{
+	// 		std::cout << "ERROR" << std::endl;
+	// 		break ;
+	// 	}
+	// }
 	// // std::cout << "Parameter in JOIN = " << parameter << std::endl;
 	// // std::cout << "Client1 nickname in JOIN : " << client1->getNickName() << std::endl;
 	// // std::cout << "Client1 FD in JOIN : " << client1->getsocketFd() << std::endl;
 	(void)client1;
 	(void)serv;
 	// (void) found;
-	return (0);
+	return (check);
 }
 
 int		command::MODE(client *client1, Server *serv)
@@ -513,28 +532,42 @@ int		command::MODE(client *client1, Server *serv)
 	if (*it && toggle == true)
 	{
 		bool tunnel = true;
+		std::cout << "DEDANS" << std::endl;
+		
 		//virifier avant si il existe un - ou un + sinon le message est mal interprete
+		
 		// channel *chan = (*it);
-		if (temp[1].size() > 2)
-		{
-			tunnel = false;
-			check = 461;
-			// std::cout << "WRONG FIRST ARG" << std::endl;
-			// message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
-			// return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-		}
+		
+		//Ici on verifiait la taille de l'argument, mais, si l'on se refere a dalNet, pas necessaire
+		
+		// if (temp[1].size() > 2)
+		// {
+		// 	tunnel = false;
+		// 	check = 472;
+		// 	serv->setChanName(temp[0]);
+		// 	// std::cout << "CharERR = " << this->M_charErr << std::endl;
+		// 	std::cout << "temp[1] = " << temp[1] << std::endl;
+		// 	std::string err = temp[1];
+		// 	serv->setCharErr(err);
+		// 	// std::cout << "WRONG FIRST ARG" << std::endl;
+		// 	// message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
+		// 	// return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+		// }
 		// std::cout << "chan name = " << chan->getName() << std::endl;
 		// std::cout << "chan password = " << chan->getPassword() << std::endl;
+		
 		std::map<client *, bool> map2 = (*it)->getListOfClients();
 		std::map<client *, bool>::iterator m_it = map2.begin();
 		std::map<client *, bool>::iterator m_ite = map2.end();
-		while (m_it != m_ite && tunnel == true)
+		while (m_it != m_ite)
 		{
 			if (m_it->first->getsocketFd() == client1->getsocketFd())
 			{
 				if (m_it->second == false)
 				{
 					check = 482;
+					serv->setChanName(temp[0]);
+					tunnel = false;
 					break ;
 				}
 				else
@@ -544,10 +577,71 @@ int		command::MODE(client *client1, Server *serv)
 			}
 			m_it++;
 		}
-		if (temp[1].size() > 2)
-			std::cout << "WRONG FIRST ARG" << std::endl;
-		else
-			std::cout << "GOOD FIRST ARG" << std::endl;
+		if (tunnel == true)
+		{
+			int	arg = whatArg(temp);
+			int sign = whatSign(temp);
+			std::cout << "ARG = " << arg << std::endl;
+			serv->setChanName(temp[0]);
+			switch (arg)
+			{
+				case 'i' :
+				{
+					bool checkIsInvite;
+					std::cout << "C'est un i !" << std::endl;
+					if (sign == '-')
+					{
+						checkIsInvite = (*it)->getIsInvite();
+						if (checkIsInvite == false)
+						{
+							(*it)->changeIsInvite();
+							check = 4;
+						}
+						break ;
+					}
+					else
+					{
+						checkIsInvite = (*it)->getIsInvite();
+						if (checkIsInvite == true)
+						{
+							(*it)->changeIsInvite();
+							check = 5;
+						}
+						break ;
+					}
+					//break ;
+				}
+				case 't' :
+				{
+					std::cout << "C'est un t !" << std::endl;
+					break ;
+				}
+				case 'k' :
+				{
+					std::cout << "C'est un k !" << std::endl;
+					break ;
+				}
+				case 'o' :
+				{
+					std::cout << "C'est un o !" << std::endl;
+					break ;
+				}
+				case 'l' :
+				{
+					std::cout << "C'est un l !" << std::endl;
+					break ;
+				}
+				default :
+				{
+					std::cout << "Wrong arg" << std::endl;
+					break ;
+				}
+			}
+		}
+		// if (temp[1].size() > 2)
+		// 	std::cout << "WRONG FIRST ARG" << std::endl;
+		// else
+		// 	std::cout << "GOOD FIRST ARG" << std::endl;
 		// while (m_it != m_ite)
 		// {
 		// 	std::cout << "La map : [" << m_it->first->getNickName() << "] = " << m_it->second << std::endl;
@@ -565,26 +659,123 @@ int		command::MODE(client *client1, Server *serv)
 		// chan->getListOfClients().clear();
 		// std::cout << "La map se clear bien" << std::endl;
 	}
-	else
-		check = 100;
+	// else
+	// {
+	// 	check = 472;
+	// 	serv->setChanName(temp[0]);
+		
+	// }
+	// switch (check)
+	// {
+	// 	case 0 :
+	// 	{
+	// 		std::cout << "Welcome to the channel !" << std::endl;
+	// 		break ;
+	// 	}
+	// 	case 461 :
+	// 	{
+	// 		message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
+	// 		return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	// 	}
+	// 	case 482 :
+	// 	{
+	// 		std::cout << "NOM DU CHANNEL 482 = " << (*it)->getName() << std::endl;
+	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
+	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
+	// 		message = ERR_CHANOPRIVSNEEDED(temp[0]);
+	// 		std::cout << "Message = " << message << std::endl;
+	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	// 		std::cout << rtn << std::endl;
+	// 		return (rtn);
+	// 		//break ;
+	// 	}
+	// 	default :
+	// 	{
+	// 		std::cout << "ERROR" << std::endl;
+	// 		break ;
+	// 	}
+	// }
+	(void)client1;
+	return (check);
+}
+
+
+int	command::handleCmd(client *client1, Server *serv, std::string cmd)
+{
+	int check = -1;
+	std::string chan, message, err;
+	if (cmd.compare("JOIN") == 0)
+		check = this->JOIN(client1, serv);
+	else if (cmd.compare("MODE") == 0)
+		check = this->MODE(client1, serv);
 	switch (check)
 	{
 		case 0 :
 		{
-			std::cout << "Welcome to the channel !" << std::endl;
+			std::cout << "COMMAND SUCCESS" << std::endl;
+			break ;
+		}
+		case 4 :
+		{
+			//Penser a envoyer a tous les clients du channel
+			chan = serv->getChanName();
+			message = NO_INVITE(client1->getNickName(), chan);
+			std::cout << "MESSAGE = " << message << std::endl;
+			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+		}
+		case 5 :
+		{
+			chan = serv->getChanName();
+			message = YES_INVITE(client1->getNickName(), chan);
+			std::cout << "MESSAGE = " << message << std::endl;
+			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+		}
+		case 403 :
+		{
+			chan = serv->getChanName();
+			std::cout << "ERROR 403" << std::endl;
+			message = ERR_NOSUCHCHANNEL(client1->getNickName(), chan);
+			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
 			break ;
 		}
 		case 461 :
 		{
-			message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
+			chan = serv->getChanName();
+			message = ERR_NEEDMOREPARAMS(client1->getNickName(), cmd);
+			std::cout << "MESSAGE = " << message << std::endl;
 			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+		}
+		case 471 :
+		{
+			chan = serv->getChanName();
+			message = ERR_CHANNELISFULL(client1->getNickName(), chan);
+			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
+			//break ;
+		}
+		case 472 :
+		{
+			chan = serv->getChanName();
+			std::cout << "chan = " << chan << std::endl;
+			message = ERR_UNKNOWNMODE(client1->getNickName(), chan);
+			std::cout << "MESSAGE = " << message << std::endl;
+			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
+			return (0);
+		}
+		case 475 :
+		{
+			chan = serv->getChanName();
+			std::cout << "ERROR 475" << std::endl;
+			message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
+			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
+			//break ;
 		}
 		case 482 :
 		{
-			std::cout << "NOM DU CHANNEL 482 = " << (*it)->getName() << std::endl;
+			chan = serv->getChanName();
+			std::cout << "NOM DU CHANNEL 482 = " << chan << std::endl;
 			std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
 			std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-			message = ERR_CHANOPRIVSNEEDED(temp[0]);
+			message = ERR_CHANOPRIVSNEEDED(chan);
 			std::cout << "Message = " << message << std::endl;
 			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 			std::cout << rtn << std::endl;
@@ -597,55 +788,8 @@ int		command::MODE(client *client1, Server *serv)
 			break ;
 		}
 	}
-	(void)client1;
-	return (0);
+	return (check);
 }
-
-
-// int	command::handleCmd(client *client1, Server *serv, std::string cmd)
-// {
-// 	int check = -1;
-// 	std::string chan, message;
-// 	if (cmd.compare("JOIN") == 0)
-// 		check = this->JOIN(client1, serv);
-// 	switch (check)
-// 	{
-// 		case 0 :
-// 		{
-// 			std::cout << "Welcome to the channel !" << std::endl;
-// 			break ;
-// 		}
-// 		case 403 :
-// 		{
-// 			chan = serv->getChanName();
-// 			std::cout << "ERROR 403" << std::endl;
-// 			message = ERR_NOSUCHCHANNEL(client1->getNickName(), chan);
-// 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-// 			break ;
-// 		}
-// 		case 471 :
-// 		{
-// 			chan = serv->getChanName();
-// 			message = ERR_CHANNELISFULL(client1->getNickName(), chan);
-// 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-// 			//break ;
-// 		}
-// 		case 475 :
-// 		{
-// 			chan = serv->getChanName();
-// 			std::cout << "ERROR 475" << std::endl;
-// 			message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
-// 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-// 			//break ;
-// 		}
-// 		default :
-// 		{
-// 			std::cout << "ERROR" << std::endl;
-// 			break ;
-// 		}
-// 	}
-// 	return (check);
-// }
 
 // std::string		JOIN();
 // std::string		PART();

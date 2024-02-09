@@ -94,6 +94,17 @@ void		Server::setChanName(std::string name)
 	this->M_chanName = name;
 	return ;
 }
+
+std::string	Server::getCharErr(void) const
+{
+	return (this->M_charErr);
+}
+
+void	Server::setCharErr(std::string err)
+{
+	this->M_charErr = err;
+	return ;
+}
 // std::vector<std::vector<std::string> > Server::getCmdArgs(void) const
 // {
 // 	return (this->M_args);
@@ -334,7 +345,7 @@ client*	Server::findClientByUserName(std::string clientUserName)
 		//if (temp.find(clientUserName) != std::string::npos)
 		//	return (*it);
 		//std::cout << "USERNAME FIND IS " << temp << std::endl;
-		if (clientUserName.find(temp) != std::string::npos)
+		if (temp.find(clientUserName) != std::string::npos)
 		{
 			std::cout << "USERNAME FIND IS " << temp << std::endl;
 			std::cout << "CLIENT USERNAME IS " << clientUserName << std::endl;
@@ -600,9 +611,9 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 3 :
 		{
-			//client* clientTmp;
+			client* clientTmp;
 
-			//clientTmp = this->findClientBySocket(clientFd);
+			clientTmp = this->findClientBySocket(clientFd);
 			std::cout << "On lance USER" << std::endl;
 			std::cout << "c2.4.1\n";
 			std::string message = commandObj->USER(clientFd, this);
@@ -611,20 +622,21 @@ std::string	Server::executeCmd(int i, int clientFd)
 				i_send_message(clientFd,message);
 				return ("WRONG USER");
 			}
-			/*
+			
 			std::cout << " -------USER INFO------ " << std::endl;
 			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
 			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
 			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
 			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
-			*/
+			
 			break ;
 		}
 		case 4 :
 		{
 			std::cout << "On lance MODE" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
-			int sendReturn = commandObj->MODE(client1, this);
+			//int sendReturn = commandObj->MODE(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "MODE");
 			if (sendReturn == -1)
 			{
 				std::cout << "Error sendind" << std::endl;
@@ -641,6 +653,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		{
 			std::cout << "On lance PONG" << std::endl;
 			std::string message = commandObj->PING(clientFd, this);
+			i_send_message(clientFd,message);
 			break ;
 		}
 		case 6 :
@@ -665,7 +678,8 @@ std::string	Server::executeCmd(int i, int clientFd)
 				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
-			int sendReturn = commandObj->JOIN(client1, this);
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "JOIN");
 			if (sendReturn == -1)
 			{
 				std::cout << "Error sending" << std::endl;
@@ -721,9 +735,9 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 16 :
 		{
-			//client* clientTmp;
+			client* clientTmp;
 
-			//clientTmp = this->findClientBySocket(clientFd);
+			clientTmp = this->findClientBySocket(clientFd);
 			std::cout << "On lance USER HOST" << std::endl;
 			std::string message = commandObj->USER(clientFd, this);
 			if (message.find("nothing") == std::string::npos)
@@ -731,13 +745,13 @@ std::string	Server::executeCmd(int i, int clientFd)
 				i_send_message(clientFd,message);
 				return ("WRONG USER");
 			}
-			/*
+			
 			std::cout << " -------USER INFO------ " << std::endl;
 			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
 			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
 			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
 			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
-			*/
+			
 			break ;
 		}
 		default :

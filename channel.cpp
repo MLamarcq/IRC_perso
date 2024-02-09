@@ -4,6 +4,7 @@ channel::channel()
 {
 	this->_nbrClients = 0;
 	this->_clientLimit = 2;
+	this->_isInvite = false;
 	return ;
 }
 
@@ -35,8 +36,9 @@ channel & channel::operator=(const channel& copy)
 			delete m_it->first;
 		}
 		this->_listOfClients.clear();
-		std::map<client *, bool>::iterator it = copy.getListOfClients().begin();
-		std::map<client *, bool>::iterator ite = copy.getListOfClients().begin();
+		std::map<client *, bool> map = copy.getListOfClients();
+		std::map<client *, bool>::iterator it = map.begin();
+		std::map<client *, bool>::iterator ite = map.begin();
 		while (it != ite)
 		{
 			client *copy2 = copyClient(it->first);
@@ -95,6 +97,20 @@ int			channel::getNbrOfClients(void) const
 int			channel::getClientLimit(void) const
 {
 	return (this->_clientLimit);
+}
+
+bool		channel::getIsInvite(void) const
+{
+	return (this->_isInvite);
+}
+
+void		channel::changeIsInvite(void)
+{
+	if (this->_isInvite == false)
+		this->_isInvite = true;
+	else
+		this->_isInvite = false;
+	return ;
 }
 
 void	channel::increaseNbrCLient(void)

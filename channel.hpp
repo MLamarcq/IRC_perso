@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/07 14:26:33 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/09 15:48:08 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,11 @@ class channel {
 		std::string getPassword(void) const;
 		int			getClientLimit(void) const;
 		int			getNbrOfClients(void) const;
+		bool		getIsInvite(void) const ;
 		std::map<client*, bool> getListOfClients(void) const;
+		
 		void		increaseNbrCLient(void);
+		void		changeIsInvite(void);
 
 		
 		int			setName(std::string parameter);
@@ -65,6 +68,7 @@ class channel {
 		std::map<client *, bool> _listOfClients;
 		std::string				_name;
 		std::string				_pswd;
+		bool					_isInvite;
 };
 
 #endif

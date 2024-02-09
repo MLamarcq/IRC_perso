@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/07 14:35:58 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/09 16:04:03 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,13 +54,18 @@
 # define ERR_ALREADYREGISTRED(nick)					RPL_PREFIX("462", nick) + " :Unauthorized command (already registered)" + CLRF
 # define ERR_PASSWDMISMATCH(nick)					RPL_PREFIX("464", nick) + " :Password incorrect" + CLRF
 # define ERR_CHANNELISFULL(nick, chan)				RPL_PREFIX("471", nick) + " " + chan + " :Cannot join channel (+l)" + CLRF
+# define ERR_UNKNOWNMODE(nick, chan)				RPL_PREFIX("472", nick) + " " + chan + " is unknown mode char to me" + CLRF
 # define ERR_BANNEDFROMCHAN(nick, chan)				RPL_PREFIX("474", nick) + " " + chan + " :Bannded from channel (+b)" + CLRF
 # define ERR_BADCHANNELKEY(nick, chan)				RPL_PREFIX("475", nick) + " " + chan + " :Cannot join channel (+k)" + CLRF
 # define ERR_NOPRIVILEGES(nick)						RPL_PREFIX("481", nick) + " :Permission Denied- You're not an IRC operator" + CLRF
-# define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + " " + channel + " :You're not channel operator\r\n"
+# define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + channel + " :You're not channel operator\r\n"
 # define ERR_NOOPERHOST(nick)						RPL_PREFIX("491", nick) + " :No O-lines for your host" + CLRF
 # define ERR_UMODEUNKNOWNFLAG(target)				RPL_PREFIX("501", "") + " " + target + " :Unknown MODE flag" + CLRF
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
+# define PONG(nickname) 							(std::string(":") + SERVER_NAME + " PONG " + SERVER_NAME + " :" + SERVER_NAME + "\r\n")
+# define NO_INVITE(nick, chan) 						(std::string(":") + SERVER_NAME + " Mode " + chan + " -i (invite_only) remove by " + nick + ". The channel is no longer in restricted mode." + CLRF)
+# define YES_INVITE(nick, chan)						(std::string(":") + SERVER_NAME + " Mode " + chan + " +i (invite_only) add by " + nick + ". The channel is now in restricted mode." + CLRF)
+
 
 #include "server.hpp"
 
@@ -81,7 +86,7 @@ class command {
 		std::string		NICK(int fd, Server *serv);
 		std::string		USER(int fd, Server *serv);
 		std::string		PING(int fd, Server *serv);
-		std::string		PONG();
+		//std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
 		std::string		PART();
@@ -99,7 +104,12 @@ class command {
 		std::vector<std::string>	parsTemp(std::vector<std::string> temp);
 
 		int	handleCmd(client *client1, Server *serv, std::string cmd);
+		int			whatArg(std::vector<std::string> temp);
+		int			whatSign(std::vector<std::string> temp);
 
 
+		//Setters and Getters for handling errors
+		// std::string			getCharErr(void) const;
+		// void				setCharErr(std::string err);
 };
 #endif
