@@ -4,11 +4,11 @@ Commandes :
 
 Imrane : PING/PONG, PASS, NICK, QUIT, USER
 
-Mael : JOIN, PART, MODE, KILL, PRIVMSG -> pour join : regarder si le channel est en invite only avant de join si le channel existe
+Mael : JOIN, PART, MODE, TOPIC, PRIVMSG -> pour join : regarder si le channel est en invite only avant de join si le channel existe
 //Bien penser au _isInvite du channel a chaque commande -> renseigne si le channel est en Invite_Only
 
 
-Gael : TOPIC, KICK, WALLOPS, OPER, NOTICE
+Gael : KILL, KICK, WALLOPS, OPER, NOTICE
 
 Class command;
 

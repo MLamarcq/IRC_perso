@@ -807,7 +807,7 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 	{
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			if ((*it)->getNbrOfClients() >= (*it)->getClientLimit())
+			if ((*it)->getNbrOfClients() == (*it)->getClientLimit())
 			{
 				std::cout << "Limit of client reach, Can't join channel" << std::endl;
 				this->setChanName((*it)->getName());
@@ -824,6 +824,8 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 					(*it)->addClientToTheChannel(client1);
 					(*it)->increaseNbrCLient();
 					(*it)->printMap();
+					std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN AVC MDP" << std::endl;
+					(*it)->welcomeInChanMessage(client1);
 					return (0);
 				}
 				else
@@ -837,6 +839,8 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 				(*it)->addClientToTheChannel(client1);
 				(*it)->increaseNbrCLient();
 				(*it)->printMap();
+				std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN SANS MDP" << std::endl;
+				(*it)->welcomeInChanMessage(client1);
 				return (0);
 			}
 			else

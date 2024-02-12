@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/09 15:48:08 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/12 12:02:02 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,12 @@
 #define CHANNEL_HPP
 
 #include "client.hpp"
+#include "command.hpp"
 #include "server.hpp"
 
 class client;
 class Server;
+class command;
 
 class channel {
 
@@ -44,6 +46,8 @@ class channel {
 		void		setPassword(std::string password);
 		void		setListofClient(client  *client1);
 		void		setOperators(client *client1);
+		void		setNewPassWord(std::string pass, std::string name, std::string username, std::string mode);
+		void		clearPassWord(std::string name, std::string username, std::string mode);
 
 		int			enterPassword(void) const;
 
@@ -55,7 +59,17 @@ class channel {
 
 		client		*copyClient(client *original);
 
-		int			setChannelFirstTime(client *client1, Server *serv, channel *new_one, std::vector<std::string> temp);
+		int			setChannelFirstTime(client *client1, Server *serv, std::vector<std::string> temp);
+
+		void		welcomeInChanMessage(client *client1);
+
+		void		sendToAllChan(std::string message);
+
+		void		changePrivileges(std::string name, std::string username, std::string mode, std::string client1, int code);
+
+		void		setClientLimit(std::string name, std::string username, std::string mode, std::string nb);
+
+		void		eraseClientLimit(std::string name, std::string username, std::string mode);
 
 
 		// variables

@@ -3,8 +3,8 @@
 channel::channel()
 {
 	this->_nbrClients = 0;
-	this->_clientLimit = 2;
-	this->_isInvite = false;
+	this->_clientLimit = 0;
+	this->_isInvite = true;
 	return ;
 }
 
@@ -217,39 +217,39 @@ void	channel::setOperators(client *client1)
 	return ;
 }
 
-int		channel::enterPassword(void) const
-{
-	//std::cout << "Mot de passe = " << this->_pswd << std::endl;
-	int i = 1;
-	std::cout << "You are trying to reach the channel : " << this->_name << std::endl;
-	std::cout << "Please enter password. (" << i + 1 << " tries left) : ";
-	bool toggle = false;
-	std::string input;
-	while (toggle == false)
-	{
-		if (!std::getline(std::cin, input))
-		{
-			std::cout << "Enf of file called. Operation cancelled" << std::endl;
-			return (0);
-		}
-		if (input.compare(this->_pswd) == 0)
-		{
-			toggle = true;
-			std::cout << "Welcome to " << this->_name << " !" << std::endl;
-		}
-		else if (i != 0)
-		{
-			i--;
-			std::cout << "Wrong password. Please try again (" << i + 1 << " try left) : ";
-		}
-		else
-		{
-			std::cout << "Connexion to channel " << this->_name << " failed. Back to main menu." << std::endl;
-			return (0);
-		}
-	}
-	return (1);
-}
+// int		channel::enterPassword(void) const
+// {
+// 	//std::cout << "Mot de passe = " << this->_pswd << std::endl;
+// 	int i = 1;
+// 	std::cout << "You are trying to reach the channel : " << this->_name << std::endl;
+// 	std::cout << "Please enter password. (" << i + 1 << " tries left) : ";
+// 	bool toggle = false;
+// 	std::string input;
+// 	while (toggle == false)
+// 	{
+// 		if (!std::getline(std::cin, input))
+// 		{
+// 			std::cout << "Enf of file called. Operation cancelled" << std::endl;
+// 			return (0);
+// 		}
+// 		if (input.compare(this->_pswd) == 0)
+// 		{
+// 			toggle = true;
+// 			std::cout << "Welcome to " << this->_name << " !" << std::endl;
+// 		}
+// 		else if (i != 0)
+// 		{
+// 			i--;
+// 			std::cout << "Wrong password. Please try again (" << i + 1 << " try left) : ";
+// 		}
+// 		else
+// 		{
+// 			std::cout << "Connexion to channel " << this->_name << " failed. Back to main menu." << std::endl;
+// 			return (0);
+// 		}
+// 	}
+// 	return (1);
+// }
 
 void	channel::addClientToTheChannel(client *client1)
 {
@@ -293,26 +293,187 @@ void	channel::printMap(void) const
 	return ;
 }
 
-int	channel::setChannelFirstTime(client *client1, Server *serv, channel *new_one, std::vector<std::string> temp)
+int	channel::setChannelFirstTime(client *client1, Server *serv, std::vector<std::string> temp)
 {
-	if (new_one->setName(temp[0]) == 0)
+	if (this->setName(temp[0]) == 0)
 	{
-		serv->setChanName(new_one->getName());
+		serv->setChanName(this->getName());
 		std::cout << "ERROR CHANNEL" << std::endl;
 		std::cout << "COMMAND JOIN SOCKET FD = " << client1->getsocketFd() << std::endl;
-		// std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), new_one->getName());
+		// std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), this->getName());
 		// std::cout << "le message = " << message << std::endl;
 		return (403);
 	}
 	if (temp.size() == 2)
-		new_one->setPassword(temp[1]);
-	new_one->setListofClient(client1);
-	new_one->setOperators(client1);
-	serv->setNewChannel(new_one);
-	new_one->increaseNbrCLient();
+		this->setPassword(temp[1]);
+	this->setListofClient(client1);
+	this->setOperators(client1);
+	serv->setNewChannel(this);
+	this->increaseNbrCLient();
 	return (0);
 }
 
+void	channel::setNewPassWord(std::string pass, std::string name, std::string username, std::string mode)
+{
+	std::string message;
+
+	if (pass.empty())
+	{
+		std::cout << "NO PASSWORD" << std::endl;
+		return ;
+	}
+	if (this->_pswd.empty() == 0)
+	{
+		std::cout << "Password already set" << std::endl;
+		return ;
+	}
+	this->_pswd = pass;
+	//message = RPL_PASSWORD_CHANGED(name, this->getName(), pass);
+	message = MODE_CHANNEL_NEWMDP(name, username, this->getName(), mode, pass);
+	std::cout << message << std::endl;
+	this->sendToAllChan(message);
+	(void)username;
+	(void)name;
+	(void)pass;
+	return ;
+}
+
+void	channel::clearPassWord(std::string name, std::string username, std::string mode)
+{
+	std::string message;
+
+	if (this->_pswd.empty())
+	{
+		std::cout << "NO PASSWORD" << std::endl;
+		return ;
+	}
+	this->_pswd.erase();
+	message = MODE_CHANNEL_CLEARMDP(name, username, this->getName(), mode);
+	this->sendToAllChan(message);
+	(void)username;
+	(void)name;
+	return ;
+}
+
+
+void	channel::changePrivileges(std::string name, std::string username, std::string mode, std::string client1, int code)
+{
+	std::string message;
+	bool present = false;
+
+	if (client1.empty())
+	{
+		std::cout << "NO NAME" << std::endl;
+		return ;
+	}
+	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
+	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
+	// if (it == this->_listOfClients.end())
+	// {
+	// 	std::cout << "Client not in channel" << std::endl;
+	// 	return ;
+	// }
+	while (it != ite)
+	{
+		if (it->first->getNickName().compare(client1) == 0)
+		{
+			present = true;
+			break ;
+		}
+		it++;
+	}
+	if (present == false)
+	{
+		std::cout << "Client not in channel" << std::endl;
+		return ;
+	}
+	if (code == 1)
+	{
+		if (it->second == false)
+		{
+			it->second = true;
+			message = MODE_CHANNEL_NOWOP(name, username, this->getName(), mode, client1);
+			this->sendToAllChan(message);
+		}
+	}
+	else if (code == 2)
+	{
+		if (it->second == true)
+		{
+			it->second = false;
+			message = MODE_CHANNEL_NOMOREOP(name, username, this->getName(), mode, client1);
+			this->sendToAllChan(message);
+		}
+	}
+	return ;
+}
+
+void	channel::setClientLimit(std::string name, std::string username, std::string mode, std::string nb)
+{
+	int check = 0;
+	int res = 0;
+	std::string message;
+
+	if (nb.empty())
+	{
+		std::cout << "NO LIMIT SPECIFIED" << std::endl;
+		return ;
+	}
+	if (name.empty())
+	{
+		std::cout << "NO CLIENT NAME" << std::endl;
+		return ;
+	}
+	if (username.empty())
+	{
+		std::cout << "NO CLIENT USERNAME" << std::endl;
+		return ;
+	}
+	check = isDigit(nb);
+	if (check == 0)
+	{
+		std::cout << "WRONG AGUMENT" << std::endl;
+		return ;
+	}
+	res = std::atoi(nb.c_str());
+	this->_clientLimit = res;
+	message = MODE_CHANNEL_CLIENTLIMIT(name, username, this->getName(), mode, nb);
+	this->sendToAllChan(message); 
+	return ;
+}
+
+void	channel::eraseClientLimit(std::string name, std::string username, std::string mode)
+{
+	std::string message;
+
+	if (name.empty())
+	{
+		std::cout << "NO CLIENT NAME" << std::endl;
+		return ;
+	}
+	if (username.empty())
+	{
+		std::cout << "NO CLIENT USERNAME" << std::endl;
+		return ;
+	}
+	this->_clientLimit = 0;
+	message = MODE_CHANNEL_NOCLIENTLIMIT(name, username, this->getName(), mode);
+	this->sendToAllChan(message);
+	return ;
+}
+
+
+void	channel::sendToAllChan(std::string message)
+{
+	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
+	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
+	while (it != ite)
+	{
+		send(it->first->getsocketFd(), message.c_str(), message.length(), 0);
+		it++;
+	}
+	return ;
+}
 
 int	channel::isDigit(std::string str) const
 {
@@ -323,14 +484,46 @@ int	channel::isDigit(std::string str) const
 			i++;
 		else
 		{
-			std::cout << "Wrong password. Only Digit accepted. Please try again : ";
+			// std::cout << "Wrong password. Only Digit accepted. Please try again : ";
 			return (0);
 		}
 	}
-	if (i != 4)
-	{
-		std::cout << "Too much digit. Please try again : ";
-		return (0);
-	}
+	// if (i != 4)
+	// {
+	// 	std::cout << "Too much digit. Please try again : ";
+	// 	return (0);
+	// }
 	return (1);
+}
+
+void	channel::welcomeInChanMessage(client *client1)
+{
+	std::string message, clientList;
+	int toSend;
+
+	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
+	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
+	while(it != ite)
+	{
+		if (it->second == true)
+			clientList = clientList + "@";
+		clientList = clientList + it->first->getNickName() + " ";
+		it++;
+	}
+	message = RPL_NAMREPLY(client1->getNickName(), this->getName(), clientList);
+	toSend = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	if (toSend < 0)
+	{
+		std::cout << "ERROR SENDING IN WELCOME CHAN" << std::endl;
+		return ;
+	}
+	message.erase();
+	message = RPL_ENDOFNAMES(client1->getNickName(), this->getName());
+	toSend = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+	if (toSend < 0)
+	{
+		std::cout << "ERROR SENDING IN WELCOME CHAN" << std::endl;
+		return ;
+	}
+	return ;
 }

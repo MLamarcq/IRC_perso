@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/09 16:04:03 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/12 14:04:40 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 # define CHANNEL_MODES				"klnt"
 # define USER_MODES					"io"
 # define RPL_PREFIX(code, nick)		std::string(":" + SERVER_HOSTNAME + " " + code + " " + nick)
+# define CLIENT_ID(nickname, username, command) (":" + nickname + "!~" + username + "@" + SERVER_NAME + " " + command + " ")
+
 //		RPL
 # define RPL_WELCOME(nick, user, host)			RPL_PREFIX("001", nick) + " :Welcome to the " + SERVER_NAME + " Network, " + nick + "!" + user + "@" + host + CLRF
 # define RPL_YOURHOST(nick)						RPL_PREFIX("002", nick) + " :Your host is " + SERVER_HOSTNAME + ", running version " + SERVER_VERSION + CLRF
@@ -32,8 +34,14 @@
 # define RPL_CHANNELMODEIS(channel, mode)		RPL_PREFIX("324", "") + " " + channel + " " + mode + " " + CLRF
 # define RPL_NOTOPIC(nick, chan)				RPL_PREFIX("331", nick) + " " + chan + " :No topic is set" + CLRF
 # define RPL_TOPIC(nick, chan, topic)			RPL_PREFIX("332", nick) + " " + chan + " :" + topic + CLRF
-# define RPL_NAMREPLY(nick, chan, names)		RPL_PREFIX("353", nick) + " = " + chan + " :" + names + CLRF
-# define RPL_ENDOFNAMES(nick, chan)				RPL_PREFIX("366", nick) + " " + chan + " :End of /NAMES list" + CLRF
+// # define RPL_NAMREPLY(nick, chan, names)		RPL_PREFIX("353", nick) + " = " + chan + " :" + names + CLRF
+// # define RPL_ENDOFNAMES(nick, chan)				RPL_PREFIX("366", nick) + " " + chan + " :End of /NAMES list" + CLRF
+# define RPL_NAMREPLY(nickname, channel, list_client) (std::string(":") + SERVER_NAME + " 353 " + nickname + " = " + channel + " :" + list_client  + "\r\n")
+# define RPL_ENDOFNAMES(nickname, channel) (std::string(":") + SERVER_NAME + " 366 " + nickname + " " + channel + " :End of /NAMES list" + "\r\n")
+// # define RPL_PASSWORD_CHANGED(nickname, channel, new_password) (std::string(":") + SERVER_NAME + " 370 " + nickname + " " + channel + " :Password for " + channel + " changed to " + new_password + "\r\n")
+#define RPL_PASSWORD_CHANGED(nickname, channel, new_password) ("Password for " + std::string(channel) + " changed to " + std::string(new_password))
+
+
 # define RPL_YOUREOPER(nick)					RPL_PREFIX("381", nick) + " :You are now an IRC operator" + CLRF
 # define RPL_QUIT(nick, senderNick, msg)		RPL_PREFIX("999", nick) + " :" + senderNick + " " + msg + CLRF
 
@@ -62,9 +70,22 @@
 # define ERR_NOOPERHOST(nick)						RPL_PREFIX("491", nick) + " :No O-lines for your host" + CLRF
 # define ERR_UMODEUNKNOWNFLAG(target)				RPL_PREFIX("501", "") + " " + target + " :Unknown MODE flag" + CLRF
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
+# define ERR_INVITEONLYCHAN(nick, channel)			(std::string(":") + SERVER_NAME + " 473 " + nick + " " + channel + " :Cannot join channel (+i)\r\n")
 # define PONG(nickname) 							(std::string(":") + SERVER_NAME + " PONG " + SERVER_NAME + " :" + SERVER_NAME + "\r\n")
 # define NO_INVITE(nick, chan) 						(std::string(":") + SERVER_NAME + " Mode " + chan + " -i (invite_only) remove by " + nick + ". The channel is no longer in restricted mode." + CLRF)
 # define YES_INVITE(nick, chan)						(std::string(":") + SERVER_NAME + " Mode " + chan + " +i (invite_only) add by " + nick + ". The channel is now in restricted mode." + CLRF)
+//# define JOIN_CHAN(nick, chan)						(std::string(":") + SERVER_NAME + " JOIN :" + chan + " " + nick + " has joined" + CLRF)
+# define JOIN_CHAN(nick, chan)						(std::string(":") + SERVER_NAME + " 001 " + nick + " :Welcome in " + chan + ", " + nick + "!" + CLRF)
+
+
+# define MODE_CHANNEL_NEWMDP(nickname, username, channel, mode, pass)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now :" + pass + "\r\n")
+# define MODE_CHANNEL_CLEARMDP(nickname, username, channel, mode)			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now erased" + "\r\n")
+# define MODE_CHANNEL_NOWOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is now an operator" + "\r\n")
+# define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer an operator" + "\r\n")
+# define MODE_CHANNEL_CLIENTLIMIT(nickname, username, channel, mode, nb)	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "client limit is now " + nb + "\r\n")
+# define MODE_CHANNEL_NOCLIENTLIMIT(nickname, username, channel, mode)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "no more client limit" + "\r\n")
+
+// :server_name 001 nickname :Bienvenue sur le canal #channel, nickname!
 
 
 #include "server.hpp"

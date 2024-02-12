@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/09 16:01:29 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/12 14:20:07 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,140 +362,52 @@ int		command::JOIN(client *client1, Server *serv)
 	bool first_toggle = false;
 	temp = parsTemp(serv->M_cmdMap["JOIN"]);
 	int check = 0;
-	// if (temp.empty())
-	// {
-	// 	std::cout << "To join a channel, please enter it's name" << std::endl;
-	// 	return (" ");
-	// }
-	// if (client1->getBan() == true)
-	// 	return ();
-	// for (size_t li = 0; li < temp.size(); li++)
-	// 	std::cout << "temp[" << li << "] = " << temp[li] << std::endl;
-	// std::cout << "temp.size() = " << temp.size() << std::endl;
-	// if (temp.size() > 2)
-	// {
-	// 	std::string chaine;
-	// 	for (std::vector<std::string>::iterator it = temp.begin(); it != temp.end(); ++it)
-	// 		chaine += *it;
-	// 	return (ERR_NEEDMOREPARAMS(client1->getNickName(), chaine));
-	// }
 	if (serv->checkChannel() == false)
 	{
 		std::cout << "No channel in the list, it will be the first !" << std::endl;
 		channel *new_one = new channel;
 		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
 		//ou utiliser QUIT
-		check = new_one->setChannelFirstTime(client1, serv, new_one, temp);
+		check = new_one->setChannelFirstTime(client1, serv, temp);
+		new_one->welcomeInChanMessage(client1);
 		first_toggle = true;
-		// std::cout << "Channel name = " << new_one->getName() << std::endl; //"d'une taille de : " << new_one->getName().size() << std::endl;
-		// std::cout << "Channel password = " << new_one->getPassword() << std::endl;
-		//return (0);
 	}
 	if (first_toggle == false)
 	{
-		// // std::cout << "On passe la" << std::endl;
 		std::list<channel *> listOfChannels = serv->getListOfChannels();
 		std::list<channel *>::iterator it = listOfChannels.begin();
 		std::list<channel *>::iterator ite = listOfChannels.end();
 		bool found = false;
 		while (it != ite)
 		{
-				// std::cout << "Parameter = " << parameter << std::endl;
-				// std::cout << "Channel name = " << (*it)->getName() << std::endl; //" d'une taille de : " << (*it)->getName().size() << std::endl;
-				// std::cout << "temp[0] = " << temp[0] << std::endl; //" d'une taille de : " << temp.size() << std::endl;
-				// std::cout << "res du compare : " << (*it)->getName().compare(temp[0]) << std::endl;
 				if ((*it)->getName().compare(temp[0]) == 0)
 				{
 					std::cout << "Channel found !" << std::endl;
-					chan = temp[0];
+					if ((*it)->getIsInvite() == false)
+					{
+						serv->setChanName(temp[0]);
+						check = 6;
+					}
+					else
+						chan = temp[0];
 					found = true;
 					break ;
 				}
 				it++;
-			}
+		}
 		if (found == false)
 		{
 			channel *new_one = new channel;
 			//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
 			//ou utiliser QUIT
-			// if (new_one->setName(temp[0]) == 0)
-			// {
-			// 	std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), new_one->getName());
-			// 	std::cout << "le message = " << message << std::endl;
-			// 	std::cout << "ERROR CHANNEL" << std::endl;
-			// 	std::cout << "La socket du client = " << client1->getsocketFd() << std::endl;
-			// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-			// }
-			// if (temp.size() == 2)
-			// 	new_one->setPassword(temp[1]);
-			// new_one->setListofClient(client1);
-			// new_one->setOperators(client1);
-			// serv->setNewChannel(new_one);
-			// new_one->increaseNbrCLient();
-			check = new_one->setChannelFirstTime(client1, serv, new_one, temp);
-			// std::cout << "Channel name = " << new_one->getName() << std::endl;
-			// std::cout << "Channel password = " << new_one->getPassword() << std::endl;
-			//return (0);
+			check = new_one->setChannelFirstTime(client1, serv, temp);
+			new_one->welcomeInChanMessage(client1);
 		}
-		else
+		else if (found == true && check == 0)
 			check = serv->addClientToChannel(client1, temp);
 	}
-	// switch (check)
-	// {
-	// 	case 0 :
-	// 	{
-	// 		std::cout << "Welcome to the channel !" << std::endl;
-	// 		break ;
-	// 	}
-	// 	case 403 :
-	// 	{
-	// 		chan = serv->getChanName();
-	// 		std::cout << "NOM DU CHANNEL 403 = " << chan << std::endl;
-	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-	// 		std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), chan);
-	// 		std::cout << message << std::endl;
-	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-	// 		std::cout << rtn << std::endl;
-	// 		return (rtn);
-	// 		//break ;
-	// 	}
-	// 	case 471 :
-	// 	{
-	// 		chan = serv->getChanName();
-	// 		std::cout << "NOM DU CHANNEL 471 = " << chan << std::endl;
-	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-	// 		std::string message = ERR_CHANNELISFULL(client1->getNickName(), chan);
-	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-	// 		std::cout << rtn << std::endl;
-	// 		return (rtn);
-	// 		//break ;
-	// 	}
-	// 	case 475 :
-	// 	{
-	// 		chan = serv->getChanName();
-	// 		std::cout << "NOM DU CHANNEL 475 = " << chan << std::endl;
-	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-	// 		std::string message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
-	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-	// 		std::cout << rtn << std::endl;
-	// 		return (rtn);
-	// 		//break ;
-	// 	}
-	// 	default :
-	// 	{
-	// 		std::cout << "ERROR" << std::endl;
-	// 		break ;
-	// 	}
-	// }
-	// // std::cout << "Parameter in JOIN = " << parameter << std::endl;
-	// // std::cout << "Client1 nickname in JOIN : " << client1->getNickName() << std::endl;
-	// // std::cout << "Client1 FD in JOIN : " << client1->getsocketFd() << std::endl;
 	(void)client1;
-	(void)serv;
-	// (void) found;
+	(void)serv;;
 	return (check);
 }
 
@@ -507,7 +419,8 @@ int		command::MODE(client *client1, Server *serv)
 	std::string recup, message;
 	int check = 0;
 	size_t i = 0;
-	
+	if (temp.size() <= 1)
+		return (0);
 	while (i < temp.size())
 	{
 		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
@@ -531,7 +444,7 @@ int		command::MODE(client *client1, Server *serv)
 	}
 	if (*it && toggle == true)
 	{
-		bool tunnel = true;
+		bool ope = true;
 		std::cout << "DEDANS" << std::endl;
 		
 		//virifier avant si il existe un - ou un + sinon le message est mal interprete
@@ -542,7 +455,7 @@ int		command::MODE(client *client1, Server *serv)
 		
 		// if (temp[1].size() > 2)
 		// {
-		// 	tunnel = false;
+		// 	ope = false;
 		// 	check = 472;
 		// 	serv->setChanName(temp[0]);
 		// 	// std::cout << "CharERR = " << this->M_charErr << std::endl;
@@ -567,7 +480,7 @@ int		command::MODE(client *client1, Server *serv)
 				{
 					check = 482;
 					serv->setChanName(temp[0]);
-					tunnel = false;
+					ope = false;
 					break ;
 				}
 				else
@@ -577,7 +490,7 @@ int		command::MODE(client *client1, Server *serv)
 			}
 			m_it++;
 		}
-		if (tunnel == true)
+		if (ope == true)
 		{
 			int	arg = whatArg(temp);
 			int sign = whatSign(temp);
@@ -619,16 +532,51 @@ int		command::MODE(client *client1, Server *serv)
 				case 'k' :
 				{
 					std::cout << "C'est un k !" << std::endl;
+					if (sign == '+')
+					{
+						if ((*it)->getPassword().empty() && temp.size() > 2)
+						{
+							(*it)->setNewPassWord(temp[2], client1->getNickName(), client1->getUserName(), "+k");
+						}
+					}
+					if (sign == '-')
+					{
+						if ((*it)->getPassword().empty() == 0)
+						{
+							(*it)->clearPassWord(client1->getNickName(), client1->getUserName(), "-k");
+						}
+					}
 					break ;
 				}
 				case 'o' :
 				{
 					std::cout << "C'est un o !" << std::endl;
+					if (temp.size() > 2)
+					{
+						if (sign == '+')
+							(*it)->changePrivileges(client1->getNickName(), client1->getUserName(), "+o", temp[2], 1);
+						if (sign == '-')
+							(*it)->changePrivileges(client1->getNickName(), client1->getUserName(), "-o", temp[2], 2);
+					}
 					break ;
 				}
 				case 'l' :
 				{
 					std::cout << "C'est un l !" << std::endl;
+					if (sign == '+')
+					{
+						if ((*it)->getClientLimit() == 0 && temp.size() > 2)
+						{
+							(*it)->setClientLimit(client1->getNickName(), client1->getUserName(), "+l", temp[2]);
+						}
+					}
+					if (sign == '-')
+					{
+						if ((*it)->getClientLimit() != 0)
+						{
+							(*it)->eraseClientLimit(client1->getNickName(), client1->getUserName(), "-l");
+						}
+					}
 					break ;
 				}
 				default :
@@ -659,42 +607,6 @@ int		command::MODE(client *client1, Server *serv)
 		// chan->getListOfClients().clear();
 		// std::cout << "La map se clear bien" << std::endl;
 	}
-	// else
-	// {
-	// 	check = 472;
-	// 	serv->setChanName(temp[0]);
-		
-	// }
-	// switch (check)
-	// {
-	// 	case 0 :
-	// 	{
-	// 		std::cout << "Welcome to the channel !" << std::endl;
-	// 		break ;
-	// 	}
-	// 	case 461 :
-	// 	{
-	// 		message = ERR_NEEDMOREPARAMS(client1->getNickName(), (*it)->getName());
-	// 		return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-	// 	}
-	// 	case 482 :
-	// 	{
-	// 		std::cout << "NOM DU CHANNEL 482 = " << (*it)->getName() << std::endl;
-	// 		std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-	// 		std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
-	// 		message = ERR_CHANOPRIVSNEEDED(temp[0]);
-	// 		std::cout << "Message = " << message << std::endl;
-	// 		int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-	// 		std::cout << rtn << std::endl;
-	// 		return (rtn);
-	// 		//break ;
-	// 	}
-	// 	default :
-	// 	{
-	// 		std::cout << "ERROR" << std::endl;
-	// 		break ;
-	// 	}
-	// }
 	(void)client1;
 	return (check);
 }
@@ -730,6 +642,13 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 			std::cout << "MESSAGE = " << message << std::endl;
 			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		}
+		case 6 :
+		{
+			chan = serv->getChanName();
+			message = ERR_INVITEONLYCHAN(client1->getNickName(), chan);
+			std::cout << "MESSAGE = " << message << std::endl;
+			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
+		}
 		case 403 :
 		{
 			chan = serv->getChanName();
@@ -759,7 +678,7 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 			message = ERR_UNKNOWNMODE(client1->getNickName(), chan);
 			std::cout << "MESSAGE = " << message << std::endl;
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-			return (0);
+			// return (0);
 		}
 		case 475 :
 		{
