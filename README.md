@@ -4,7 +4,7 @@ Commandes :
 
 Imrane : PING/PONG, PASS, NICK, QUIT, USER
 
-Mael : JOIN, PART, MODE, TOPIC, PRIVMSG -> pour join : regarder si le channel est en invite only avant de join si le channel existe
+Mael : JOIN(ok), PART, MODE(ok), TOPIC(ok), PRIVMSG, INVITE(ok) -> pour join : regarder si le channel est en invite only avant de join si le channel existe
 //Bien penser au _isInvite du channel a chaque commande -> renseigne si le channel est en Invite_Only
 
 
@@ -54,3 +54,9 @@ IMRANE CHANGEMENT :
 
 - Fonction JOIN terminee -> mais encore un petit soucis avec envoi d'erreur concernant les mauvais noms de channel
 - Commencement de MODE -> Creation de l'operateur "=" dans channel + nouvelles fonctions pour copie profonde
+
+
+
+
+
+Ne pas oublier de demander l'avis au gars sur le mode -l : si on est 2 dans le channel et que je fais /MODE -l -> puis /MODE +l avec un nombre inferieur au nombre de clients present dans le channel, est-ce que ca marche?

@@ -4,7 +4,8 @@ channel::channel()
 {
 	this->_nbrClients = 0;
 	this->_clientLimit = 0;
-	this->_isInvite = true;
+	this->_isInvite = false;
+	this->_topicEstate = false;
 	return ;
 }
 
@@ -89,6 +90,11 @@ std::string channel::getPassword(void) const
 	return (this->_pswd);
 }
 
+std::string channel::getTopic(void) const
+{
+	return (this->_topic);
+}
+
 int			channel::getNbrOfClients(void) const
 {
 	return (this->_nbrClients);
@@ -104,13 +110,9 @@ bool		channel::getIsInvite(void) const
 	return (this->_isInvite);
 }
 
-void		channel::changeIsInvite(void)
+bool		channel::getTopicEstate(void) const
 {
-	if (this->_isInvite == false)
-		this->_isInvite = true;
-	else
-		this->_isInvite = false;
-	return ;
+	return (this->_topicEstate);
 }
 
 void	channel::increaseNbrCLient(void)
@@ -119,9 +121,22 @@ void	channel::increaseNbrCLient(void)
 	return ;
 }
 
+std::list<client *>		channel::getWaitingList(void) const
+{
+	return (this->_waitingList);
+}
+
 std::map<client*, bool> channel::getListOfClients(void) const
 {
 	return (this->_listOfClients);
+}
+
+void	channel::setWaitingList(client *client1)
+{
+	if (!client1)
+		return ;
+	this->_waitingList.push_back(client1);
+	return ;
 }
 
 int	channel::setName(std::string parameter)
@@ -206,6 +221,19 @@ void	channel::setListofClient(client *client1)
 	return ;
 }
 
+void	channel::setTopic(std::string topic)
+{
+	if (topic.empty())
+	{
+		std::cout << "No topic" << std::endl;
+		return ;
+	}
+	if (this->_topic.empty() == 0)
+		this->_topic.erase();
+	this->_topic = topic;
+	return ;
+}
+
 void	channel::setOperators(client *client1)
 {
 	if (!client1)
@@ -217,40 +245,6 @@ void	channel::setOperators(client *client1)
 	return ;
 }
 
-// int		channel::enterPassword(void) const
-// {
-// 	//std::cout << "Mot de passe = " << this->_pswd << std::endl;
-// 	int i = 1;
-// 	std::cout << "You are trying to reach the channel : " << this->_name << std::endl;
-// 	std::cout << "Please enter password. (" << i + 1 << " tries left) : ";
-// 	bool toggle = false;
-// 	std::string input;
-// 	while (toggle == false)
-// 	{
-// 		if (!std::getline(std::cin, input))
-// 		{
-// 			std::cout << "Enf of file called. Operation cancelled" << std::endl;
-// 			return (0);
-// 		}
-// 		if (input.compare(this->_pswd) == 0)
-// 		{
-// 			toggle = true;
-// 			std::cout << "Welcome to " << this->_name << " !" << std::endl;
-// 		}
-// 		else if (i != 0)
-// 		{
-// 			i--;
-// 			std::cout << "Wrong password. Please try again (" << i + 1 << " try left) : ";
-// 		}
-// 		else
-// 		{
-// 			std::cout << "Connexion to channel " << this->_name << " failed. Back to main menu." << std::endl;
-// 			return (0);
-// 		}
-// 	}
-// 	return (1);
-// }
-
 void	channel::addClientToTheChannel(client *client1)
 {
 	if (!client1)
@@ -258,8 +252,6 @@ void	channel::addClientToTheChannel(client *client1)
 		std::cout << "Client doesn't exist" << std::endl;
 		return ;
 	}
-	// if (enterPassword() == 0)
-	// 	return ;
 	this->_listOfClients[client1] = false;
 	return ;
 }
@@ -311,6 +303,48 @@ int	channel::setChannelFirstTime(client *client1, Server *serv, std::vector<std:
 	serv->setNewChannel(this);
 	this->increaseNbrCLient();
 	return (0);
+}
+
+void		channel::changeIsInviteOn(std::string name, std::string username, std::string mode)
+{
+	std::string message;
+	
+	if (name.empty())
+	{
+		std::cout << "NO CLIENT NAME" << std::endl;
+		return ;
+	}
+	if (username.empty())
+	{
+		std::cout << "NO CLIENT USERNAME" << std::endl;
+		return ;
+	}
+	if (this->_isInvite == false)
+		this->_isInvite = true;
+	message = MODE_CHANNEL_YES_INVITE(name, username, this->getName(), mode);
+	this->sendToAllChan(message);
+	return ;
+}
+
+void		channel::changeIsInviteOff(std::string name, std::string username, std::string mode)
+{
+	std::string message;
+	
+	if (name.empty())
+	{
+		std::cout << "NO CLIENT NAME" << std::endl;
+		return ;
+	}
+	if (username.empty())
+	{
+		std::cout << "NO CLIENT USERNAME" << std::endl;
+		return ;
+	}
+	if (this->_isInvite == true)
+		this->_isInvite = false;
+	message = MODE_CHANNEL_NO_INVITE(name, username, this->getName(), mode);
+	this->sendToAllChan(message);
+	return ;
 }
 
 void	channel::setNewPassWord(std::string pass, std::string name, std::string username, std::string mode)
@@ -366,6 +400,16 @@ void	channel::changePrivileges(std::string name, std::string username, std::stri
 		std::cout << "NO NAME" << std::endl;
 		return ;
 	}
+	if (name.empty())
+	{
+		std::cout << "NO CLIENT NAME" << std::endl;
+		return ;
+	}
+	if (username.empty())
+	{
+		std::cout << "NO CLIENT USERNAME" << std::endl;
+		return ;
+	}
 	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
 	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
 	// if (it == this->_listOfClients.end())
@@ -385,6 +429,7 @@ void	channel::changePrivileges(std::string name, std::string username, std::stri
 	if (present == false)
 	{
 		std::cout << "Client not in channel" << std::endl;
+		//Peut-etre envoyer un msg ici
 		return ;
 	}
 	if (code == 1)
@@ -462,6 +507,40 @@ void	channel::eraseClientLimit(std::string name, std::string username, std::stri
 	return ;
 }
 
+void	channel::setTopicEstate(std::string name, std::string username, std::string mode, int code)
+{
+	std::string message;
+
+	if (name.empty())
+	{
+		std::cout << "NO CLIENT NAME" << std::endl;
+		return ;
+	}
+	if (username.empty())
+	{
+		std::cout << "NO CLIENT USERNAME" << std::endl;
+		return ;
+	}
+	if (code == 1)
+	{
+		if (this->_topicEstate == true)
+		{
+			this->_topicEstate = false;
+			message = MODE_TOPIC_OFF(name, username, this->getName(), mode);
+			this->sendToAllChan(message);
+		}
+	}
+	if (code == 2)
+	{
+		if (this->_topicEstate == false)
+		{
+			this->_topicEstate = true;
+			message = MODE_TOPIC_ON(name, username, this->getName(), mode);
+			this->sendToAllChan(message);
+		}
+	}
+	return ;
+}
 
 void	channel::sendToAllChan(std::string message)
 {

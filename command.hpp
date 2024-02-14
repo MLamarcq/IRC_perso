@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/12 14:04:40 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/14 17:33:24 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 # define RPL_AWAY(nick, senderNick, msg)		RPL_PREFIX("301", nick) + " " + senderNick + " " + msg + CLRF
 # define RPL_CHANNELMODEIS(channel, mode)		RPL_PREFIX("324", "") + " " + channel + " " + mode + " " + CLRF
 # define RPL_NOTOPIC(nick, chan)				RPL_PREFIX("331", nick) + " " + chan + " :No topic is set" + CLRF
-# define RPL_TOPIC(nick, chan, topic)			RPL_PREFIX("332", nick) + " " + chan + " :" + topic + CLRF
+# define RPL_TOPIC(nick, chan, topic)			RPL_PREFIX("332", nick) + " " + chan + " " + topic + CLRF
 // # define RPL_NAMREPLY(nick, chan, names)		RPL_PREFIX("353", nick) + " = " + chan + " :" + names + CLRF
 // # define RPL_ENDOFNAMES(nick, chan)				RPL_PREFIX("366", nick) + " " + chan + " :End of /NAMES list" + CLRF
 # define RPL_NAMREPLY(nickname, channel, list_client) (std::string(":") + SERVER_NAME + " 353 " + nickname + " = " + channel + " :" + list_client  + "\r\n")
@@ -84,8 +84,27 @@
 # define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer an operator" + "\r\n")
 # define MODE_CHANNEL_CLIENTLIMIT(nickname, username, channel, mode, nb)	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "client limit is now " + nb + "\r\n")
 # define MODE_CHANNEL_NOCLIENTLIMIT(nickname, username, channel, mode)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "no more client limit" + "\r\n")
+# define MODE_CHANNEL_NO_INVITE(nickname, username, channel, mode) 			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "(invite_only) remove " + "\r\n")
+# define MODE_CHANNEL_YES_INVITE(nickname, username, channel, mode)			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "(invite_only) add. The channel is now in restricted mode." + "\r\n")
 
-// :server_name 001 nickname :Bienvenue sur le canal #channel, nickname!
+# define MODE_UNKNOW_MODE(nickname, username, channel, mode)				(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " is unknown mode char to me" + "\r\n")
+# define MODE_TOPIC_OFF(nickname, username, channel, mode)					(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Only operators can now change channel's topic." + "\r\n")
+# define MODE_TOPIC_ON(nickname, username, channel, mode)					(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Channel's topic can now be change by everyone." + "\r\n")
+
+# define MODE_NEEDMOREPARAMS(nickname, username, channel, mode)				(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Error. Need more prarameters." + "\r\n")
+
+// # define NOTONCHANNEL(nickname, username, channel) 							(CLIENT_ID(nickname, username, "") + channel + " Error. You are not on that channel.\r\n")
+#define NOTONCHANNEL(nickname, username, channel) 							(std::string(":") + SERVER_NAME + " 442 " + nickname + " " + channel + " :You are not on that channel\r\n")
+
+# define NOSUCHCHANNEL(nickname, username, channel)							(CLIENT_ID(nickname, username, "") + " " + channel + " Error. No such channel." + "\r\n")
+// # define TOPIC_IS_OFF(nick, chan)											(std::string(":") + SERVER_NAME + " " + nick + " :Topic changes desabled on " + chan + " !" + CLRF)
+# define ERR_USERONCHANNEL(nickname, username, channel, name)				(CLIENT_ID(nickname, username, "") + " 443 " + channel + " " + name + " :is already on channel." + "\r\n")
+// # define ERR_NOSUCHNICK(nickname, username, name)							(RPL_PREFIX("401", nickname) + " " + name + " :no such nick" + "\r\n")
+# define INVITE_ON_CHAN(nickname, username, channel, name)					(CLIENT_ID(nickname, username, "") + " " + name + " You are invited on " + channel + " by " + nickname + "\r\n")
+# define NEEDMOREPARAMS(nickname, username, cmd)							(CLIENT_ID(nickname, username, "")  + cmd + " Error. Need more prarameters." + "\r\n")
+# define PRIVMSG_CHAN(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "PRIVMSG") + dest + " :" + msg + "\r\n")
+
+
 
 
 #include "server.hpp"
@@ -111,20 +130,21 @@ class command {
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
 		std::string		PART();
-		std::string		TOPIC();
 		std::string		KICK();
-		int				MODE(client *client1, Server *serv);
-		std::string		PRIVMSG();
 		std::string		NOTICE();
 		std::string		KILL();
 		std::string		WALLOPS();
-		int		JOIN(client *client1, Server *serv);
+		int				TOPIC(client *client1, Server *serv);
+		int				MODE(client *client1, Server *serv);
+		int				JOIN(client *client1, Server *serv);
+		int				INVITE(client *client1, Server *serv);
+		int				PRIVMSG(client *client1, Server *serv);
 
 		std::string		bot();
 
 		std::vector<std::string>	parsTemp(std::vector<std::string> temp);
 
-		int	handleCmd(client *client1, Server *serv, std::string cmd);
+		int			handleCmd(client *client1, Server *serv, std::string cmd);
 		int			whatArg(std::vector<std::string> temp);
 		int			whatSign(std::vector<std::string> temp);
 

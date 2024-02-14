@@ -105,6 +105,11 @@ void	Server::setCharErr(std::string err)
 	this->M_charErr = err;
 	return ;
 }
+
+std::list<client *>	Server::getServClientList(void) const
+{
+	return (this->listOfClients);
+}
 // std::vector<std::vector<std::string> > Server::getCmdArgs(void) const
 // {
 // 	return (this->M_args);
@@ -142,6 +147,7 @@ void	Server::fill_commands_vector(void)
 	this->M_commands.push_back("PRIVMSG");
 	this->M_commands.push_back("WALLOPS");
 	this->M_commands.push_back("userhost");
+	this->M_commands.push_back("INVITE");
 	return ;
 }
 
@@ -716,6 +722,24 @@ std::string	Server::executeCmd(int i, int clientFd)
 		case 12 :
 		{
 			std::cout << "On lance TOPIC" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "TOPIC");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		case 13 :
@@ -726,6 +750,24 @@ std::string	Server::executeCmd(int i, int clientFd)
 		case 14 :
 		{
 			std::cout << "On lance PRIVMSG" << std::endl;
+				client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "PRIVMSG");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		case 15 :
@@ -752,6 +794,29 @@ std::string	Server::executeCmd(int i, int clientFd)
 			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
 			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
 			
+			break ;
+		}
+		case 17 :
+		{
+			std::cout << "On lance INVITE" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "INVITE");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		default :
@@ -800,14 +865,14 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 	// 	return ;
 	// }
 	// std::cout << "On arrive bien jusque la" << std::endl;
-
+	std::string message;
 	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
 	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
 	while (it != ite)
 	{
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			if ((*it)->getNbrOfClients() == (*it)->getClientLimit())
+			if ((*it)->getNbrOfClients() == (*it)->getClientLimit()) //poser la question aux gars
 			{
 				std::cout << "Limit of client reach, Can't join channel" << std::endl;
 				this->setChanName((*it)->getName());
@@ -826,6 +891,11 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 					(*it)->printMap();
 					std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN AVC MDP" << std::endl;
 					(*it)->welcomeInChanMessage(client1);
+					if ((*it)->getTopic().empty() == 0)
+					{
+						message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
+						send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+					}
 					return (0);
 				}
 				else
@@ -841,6 +911,11 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 				(*it)->printMap();
 				std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN SANS MDP" << std::endl;
 				(*it)->welcomeInChanMessage(client1);
+				if ((*it)->getTopic().empty() == 0)
+				{
+					message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
+					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+				}
 				return (0);
 			}
 			else

@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/12 12:02:02 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/14 15:59:51 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,17 +31,24 @@ class channel {
 		~channel();
 
 		// si join 1ere fois -> client operator
-		std::string	getName(void) const;
-		std::string getPassword(void) const;
-		int			getClientLimit(void) const;
-		int			getNbrOfClients(void) const;
-		bool		getIsInvite(void) const ;
+		std::string				getName(void) const;
+		std::string 			getPassword(void) const;
+		std::string				getTopic(void) const;
+		int						getClientLimit(void) const;
+		int						getNbrOfClients(void) const;
+		bool					getIsInvite(void) const ;
+		bool					getTopicEstate(void) const ;
 		std::map<client*, bool> getListOfClients(void) const;
+		std::list<client *>		getWaitingList(void) const;
+		void					setWaitingList(client *clien1);
 		
 		void		increaseNbrCLient(void);
-		void		changeIsInvite(void);
-
+		// void		changeIsInvite(void);
+		void		changeIsInviteOff(std::string name, std::string username, std::string mode);
+		void		changeIsInviteOn(std::string name, std::string username, std::string mode);
 		
+		void		setTopic(std::string topic);
+		void		setTopicEstate(std::string name, std::string username, std::string mode, int code);
 		int			setName(std::string parameter);
 		void		setPassword(std::string password);
 		void		setListofClient(client  *client1);
@@ -80,9 +87,12 @@ class channel {
 		int						_clientLimit;
 		int						_nbrClients;
 		std::map<client *, bool> _listOfClients;
+		std::list<client *>		_waitingList;
 		std::string				_name;
 		std::string				_pswd;
+		std::string				_topic;
 		bool					_isInvite;
+		bool					_topicEstate;
 };
 
 #endif

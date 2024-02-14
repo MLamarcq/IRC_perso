@@ -59,7 +59,6 @@ class Server
 			// about client
 			int nbofClients;
 			client* createClient();
-			std::list<client *> listOfClients;
 			client* findClientBySocket(int clientSocketFd);
 			client*	findClientByNickName(std::string clientNickname);
 			void	eraseClientFromList(std::string clientNickname);
@@ -78,6 +77,7 @@ class Server
 			void				setCharErr(std::string err);
 			void				init_struct(void);
 			void				fill_commands_vector(void);
+			std::list<client *>	getServClientList(void) const;
 			// std::vector<std::vector<std::string> > getCmdArgs(void) const;
 
 			//All about socket
@@ -169,6 +169,7 @@ class Server
 		t_serv								*M_struct;
 		std::map<std::string, std::vector<std::string> >	M_cmdMap;
 		std::string							M_pass_wd;
+		std::list<client *> 				listOfClients;
 	
 	private :
 
