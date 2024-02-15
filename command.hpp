@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/14 17:33:24 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/15 10:08:04 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,6 @@ class command {
 		//std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
-		std::string		PART();
 		std::string		KICK();
 		std::string		NOTICE();
 		std::string		KILL();
@@ -139,6 +138,7 @@ class command {
 		int				JOIN(client *client1, Server *serv);
 		int				INVITE(client *client1, Server *serv);
 		int				PRIVMSG(client *client1, Server *serv);
+		int				PART(client *client1, Server *serv);
 
 		std::string		bot();
 

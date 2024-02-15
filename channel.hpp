@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/14 15:59:51 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/15 08:43:29 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,8 @@ class channel {
 		void		welcomeInChanMessage(client *client1);
 
 		void		sendToAllChan(std::string message);
+		void		sendPrivMsg(client *client1, std::string message);
+
 
 		void		changePrivileges(std::string name, std::string username, std::string mode, std::string client1, int code);
 

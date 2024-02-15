@@ -707,6 +707,24 @@ std::string	Server::executeCmd(int i, int clientFd)
 		case 9 :
 		{
 			std::cout << "On lance PART" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "PART");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		case 10 :

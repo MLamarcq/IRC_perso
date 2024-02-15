@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/14 17:40:37 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/15 10:09:49 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -920,12 +920,65 @@ int		command::PRIVMSG(client *client1, Server *serv)
 			message.erase(found, 1);
 		std::cout << "MESSAGE 2 = " << message << std::endl;
 		to_send = PRIVMSG_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), message);
-		(*it)->sendToAllChan(to_send);
+		(*it)->sendPrivMsg(client1, to_send);
 	}
 	(void)client1;
 	(void)serv;
 	return (check);
 }
+
+int	command::PART(client *client1, Server *serv)
+{
+	bool toggle = false;
+	std::string message;
+	std::vector<std::string> temp;
+	temp = parsTemp(serv->M_cmdMap["PART"]);
+	if (temp.size() == 0)
+		return (0);
+	std::list<channel *> chanList = serv->getListOfChannels();
+	std::list<channel *>::iterator it = chanList.begin();
+	std::list<channel *>::iterator ite = chanList.end();
+	while (it != ite)
+	{
+		if ((*it)->getName().compare(temp[0]) == 0)
+		{
+			toggle = true;
+			break ;
+		}
+		it++;
+	}
+	if (*it && toggle == true)
+	{
+		bool inChan = false;
+		std::map<client *, bool> clMap = (*it)->getListOfClients();
+		std::map<client *, bool>::iterator c_it = clMap.begin();
+		std::map<client *, bool>::iterator c_ite = clMap.end();
+		while (c_it != c_ite)
+		{
+			if (c_it->first->getsocketFd() == client1->getsocketFd())
+			{
+				inChan = true;
+				break ;
+			}
+			c_it++;
+		}
+		if (inChan == false)
+		{
+			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			return (0);
+		}
+		std::cout << "SUCCESS IN PART !" << std::endl;
+	}
+	else
+	{
+		std
+		message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), temp[0]);
+		send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+	}
+	return (0);
+}
+
 
 int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 {
@@ -941,6 +994,8 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 		check = this->INVITE(client1, serv);
 	else if (cmd.compare("PRIVMSG") == 0)
 		check = this->PRIVMSG(client1, serv);
+	else if (cmd.compare("PART") == 0)
+		check = this->PART(client1, serv);
 	switch (check)
 	{
 		case 0 :

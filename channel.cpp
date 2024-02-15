@@ -554,6 +554,21 @@ void	channel::sendToAllChan(std::string message)
 	return ;
 }
 
+void	channel::sendPrivMsg(client *client1, std::string message)
+{
+
+	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
+	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
+	while (it != ite)
+	{
+		if (it->first->getsocketFd() == client1->getsocketFd())
+			it++;
+		send(it->first->getsocketFd(), message.c_str(), message.length(), 0);
+		it++;
+	}
+	return ;
+}
+
 int	channel::isDigit(std::string str) const
 {
 	int i = 0;
