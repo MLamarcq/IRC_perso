@@ -3,7 +3,7 @@
 channel::channel()
 {
 	this->_nbrClients = 0;
-	this->_clientLimit = 0;
+	this->_clientLimit = 100;
 	this->_isInvite = false;
 	this->_topicEstate = false;
 	return ;
@@ -501,7 +501,7 @@ void	channel::eraseClientLimit(std::string name, std::string username, std::stri
 		std::cout << "NO CLIENT USERNAME" << std::endl;
 		return ;
 	}
-	this->_clientLimit = 0;
+	this->_clientLimit = 100;
 	message = MODE_CHANNEL_NOCLIENTLIMIT(name, username, this->getName(), mode);
 	this->sendToAllChan(message);
 	return ;
@@ -556,15 +556,20 @@ void	channel::sendToAllChan(std::string message)
 
 void	channel::sendPrivMsg(client *client1, std::string message)
 {
-
-	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
-	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
+	int i = 0;
+	std::map<client *, bool> m_client = this->_listOfClients;
+	std::map<client *, bool>::iterator it = m_client.begin();
+	std::map<client *, bool>::iterator ite = m_client.end();
 	while (it != ite)
 	{
-		if (it->first->getsocketFd() == client1->getsocketFd())
+		std::cout << PURPLE << "i = " << i << END << std::endl;
+		if (it != ite && it->first->getsocketFd() == client1->getsocketFd())
 			it++;
-		send(it->first->getsocketFd(), message.c_str(), message.length(), 0);
-		it++;
+		if (it != ite)
+			send(it->first->getsocketFd(), message.c_str(), message.length(), 0);
+		if (it != ite)
+			it++;
+		i++;
 	}
 	return ;
 }
@@ -605,6 +610,7 @@ void	channel::welcomeInChanMessage(client *client1)
 		it++;
 	}
 	message = RPL_NAMREPLY(client1->getNickName(), this->getName(), clientList);
+	std::cout << RED << "MESSAGE DANS UN PREMIER TEMPS = " << message << END << std::endl;
 	toSend = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 	if (toSend < 0)
 	{
@@ -613,6 +619,7 @@ void	channel::welcomeInChanMessage(client *client1)
 	}
 	message.erase();
 	message = RPL_ENDOFNAMES(client1->getNickName(), this->getName());
+	std::cout << RED << "MESSAGE DANS UN SECOND TEMPS = " << message << END << std::endl;
 	toSend = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 	if (toSend < 0)
 	{

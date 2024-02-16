@@ -73,12 +73,9 @@ class Server
 			std::string			getChanName(void) const;
 			void				setChanName(std::string name);
 			void				Copy_Struct(Server const &rhs);
-			std::string			getCharErr(void) const;
-			void				setCharErr(std::string err);
 			void				init_struct(void);
 			void				fill_commands_vector(void);
 			std::list<client *>	getServClientList(void) const;
-			// std::vector<std::vector<std::string> > getCmdArgs(void) const;
 
 			//All about socket
 			void				Setup_Socket(void);
@@ -114,6 +111,7 @@ class Server
 			void				setNewChannel(channel *chan);
 			int					addClientToChannel(client *client1, std::vector<std::string> parameter);
 			bool				checkChannel(void) const;
+			void				eraseChannelFromList(channel *chan);
 
 
 			void 				handle_sigpipe(int signal);
@@ -183,12 +181,11 @@ class Server
 			command											*commandObj;
 			std::list<channel *> 							M_listOfChannels;
 			std::string										M_chanName;
-			std::string										M_charErr;
 };
 
 std::string			intTostring(int number);
 std::vector<std::string> split_string_v2(const std::string& s, char delimiter);
 std::string const	getTime();
-
+bool containsAlphanumeric(const std::vector<std::string>& strVector);
 
 #endif
