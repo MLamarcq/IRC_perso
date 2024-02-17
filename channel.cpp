@@ -628,3 +628,15 @@ void	channel::welcomeInChanMessage(client *client1)
 	}
 	return ;
 }
+
+void	channel::eraseCLientFromChan(client *client1)
+{
+	std::map<client *, bool>::iterator found_it = this->_listOfClients.find(client1);
+	std::map<client *, bool>::iterator ite= this->_listOfClients.end();
+	
+	if (found_it != ite)
+	{
+		this->_listOfClients.erase(client1);
+	}
+	return ;
+}

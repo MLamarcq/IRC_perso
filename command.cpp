@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/17 12:16:09 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/17 14:00:26 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -331,6 +331,7 @@ int		command::JOIN(client *client1, Server *serv)
 	bool first_toggle = false;
 	temp = parsTemp(serv->M_cmdMap["JOIN"]);
 	int check = 0;
+
 	if (serv->checkChannel() == false)
 	{
 		std::cout << "No channel in the list, it will be the first !" << std::endl;
@@ -1037,10 +1038,11 @@ int	command::PART(client *client1, Server *serv)
 		// {
 		// 	std::cout << "INCHAN = " << inChan << std::endl;
 		// 	std::cout << "ON ERASE LE CLIENT" << std::endl;
-		(*it)
-		(*it)->getListOfClients().erase(c_it->first)
+	
+		// (*it)->getListOfClients().erase(c_it->first);
 			// clMap.erase(found_it);
 			// copy.erase(found_it);
+		(*it)->eraseCLientFromChan(client1);
 		std::map<client *, bool> cl_map = (*it)->getListOfClients();
 		std::map<client *, bool>::iterator cite = cl_map.end();
 		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
