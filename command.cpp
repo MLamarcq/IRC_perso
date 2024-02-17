@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/16 16:43:55 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/17 12:16:09 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,7 @@ std::string		command::USER(int fd, Server* serv)
 			std::cout << "c2.4.1.4\n";
 			//std::cout << "TABSPLIT[0] = " << tabSplit[0] << std::endl;
 			if (clientTmp)
-		    {
+			{
 				if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName())) != NULL)
 				{
 					std::cout << "USER ALREADY EXIST" << std::endl;
@@ -262,12 +262,12 @@ std::string		command::PASS(int fd, Server* serv)
 	client* clientTmp;
 	std::map<std::string, std::vector<std::string > >::iterator it = serv->M_cmdMap.find("PASS");
 
-    // Check if the key was found
-    if (it != serv->M_cmdMap.end()) {
-        temp = parsTemp(serv->M_cmdMap["PASS"]);
-    } else {
-        temp = parsTemp(serv->M_cmdMap["SSPA"]);
-    }
+	// Check if the key was found
+	if (it != serv->M_cmdMap.end()) {
+		temp = parsTemp(serv->M_cmdMap["PASS"]);
+	} else {
+		temp = parsTemp(serv->M_cmdMap["SSPA"]);
+	}
 	std::cout << "c20\n";
 	
 	//temp = serv->M_cmdMap["PASS"];	
@@ -863,10 +863,10 @@ int		command::PRIVMSG(client *client1, Server *serv)
 	// temp = parsTemp(serv->M_cmdMap["PRIVMSG"]);
 	std::map<std::string, std::vector<std::string > >::iterator m_found = serv->M_cmdMap.find("PRIVMSG");
 	if (m_found != serv->M_cmdMap.end()) {
-        temp = parsTemp(serv->M_cmdMap["PRIVMSG"]);
-    } else {
-        temp = parsTemp(serv->M_cmdMap["VMSGPRI"]);
-    }
+		temp = parsTemp(serv->M_cmdMap["PRIVMSG"]);
+	} else {
+		temp = parsTemp(serv->M_cmdMap["VMSGPRI"]);
+	}
 	int check = 0;
 	size_t i = 1;
 	size_t found = 0;
@@ -906,6 +906,53 @@ int		command::PRIVMSG(client *client1, Server *serv)
 		to_send = PRIVMSG_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), message);
 		(*it)->sendPrivMsg(client1, to_send);
 	}
+	else
+	{
+		size_t j = 1;
+		// std::cout << "Taille de temp = " << temp.size() << std::endl;
+		// while (j < temp.size())
+		// {
+		// 	std::cout << "temp[" << j << "] = " << temp[j] << std::endl;
+		// 	j++;
+		// }
+		bool exist = false;
+		client *dest;
+		std::list<client *> cList = serv->getServClientList();
+		std::list<client *>::iterator cit = cList.begin();
+		std::list<client *>::iterator cite = cList.end();
+		for (; cit != cite; cit++)
+		{
+			if ((*cit)->getNickName().compare(temp[0]) == 0)
+			{
+				exist = true;
+				dest = (*cit);
+				break ;
+			}
+		}
+		while (j < temp.size())
+		{
+			std::cout << "temp[" << j << "] = " << temp[j] << std::endl;
+			message.append(temp[j]);
+			message.append(" ");
+			j++;
+		}
+		std::cout << "MESSAGE 1 = " << message << std::endl;
+		found = message.find(":");
+		if (found != std::string::npos)
+			message.erase(found, 1);
+		if (exist == false)
+		{
+			// message = NOSUCHUSER(client1->getNickName(), client1->getUserName(), temp[0]);
+			message = ERR_NOSUCHNICK(client1->getNickName(), temp[0]);
+			std::cout << "MESSAGE = " << message << std::endl;
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			return (0);
+		}
+		// to_send = PRIVMSG_USER(client1->getNickName(), client1->getUserName(), dest->getNickName(), message);
+		to_send = PRIVMSG_CHAN	(client1->getNickName(), client1->getUserName(), dest->getNickName(), message);
+		std::cout << "TO_SEND = " << to_send << std::endl;
+		send(dest->getsocketFd(), message.c_str(), message.length(), 0);
+	}
 	(void)client1;
 	(void)serv;
 	return (check);
@@ -918,11 +965,10 @@ int	command::PART(client *client1, Server *serv)
 	size_t i = 1;
 	std::vector<std::string> temp;
 	std::map<std::string, std::vector<std::string > >::iterator m_found = serv->M_cmdMap.find("PART");
-	if (m_found != serv->M_cmdMap.end()) {
-        temp = parsTemp(serv->M_cmdMap["PART"]);
-    } else {
-        temp = parsTemp(serv->M_cmdMap["RTPA"]);
-    }
+	if (m_found != serv->M_cmdMap.end())
+		temp = parsTemp(serv->M_cmdMap["PART"]);
+	else
+		temp = parsTemp(serv->M_cmdMap["RTPA"]);
 	if (temp.size() == 0)
 		return (0);
 	std::cout << GREEN << "-------------------ON RENTRE DANS PART-----------------" << END << std::endl;
@@ -943,6 +989,7 @@ int	command::PART(client *client1, Server *serv)
 		std::cout << "Le channel numero " << i << " est " << (*it)->getName() << std::endl;
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
+			std::cout << YELLOW << "CHANNEL FOUND ! LE NOM EST " << (*it)->getName() << END << std::endl;
 			toggle = true;
 			break ;
 		}
@@ -960,34 +1007,47 @@ int	command::PART(client *client1, Server *serv)
 		{
 			if (c_it->first->getsocketFd() == client1->getsocketFd())
 			{
+				std::cout << "CLIENT FOUND IN CHANNEL" << std::endl;
 				inChan = true;
 				break ;
 			}
 			c_it++;
 		}
+		std::cout << RED << "-------------------ON FAIT UN PRINT DU CLIENT TROUVE-----------------------" << END << std::endl;
+		std::cout << "LE NICK NAME = " << c_it->first->getNickName() << std::endl;
+		std::cout << "LE REAL NAME = " << c_it->first->getRealName() << std::endl;
+		std::cout << "LE USER NAME = " << c_it->first->getUserName() << std::endl;
+		std::cout << "LE HOST NAME = " << c_it->first->getHostName() << std::endl;
+		std::cout << "LE MODE = " << c_it->first->getMode() << std::endl;
+		std::cout << "LE MESSAGE DE BIENVENU A ETE ENVOYE (1 = oui) = " << c_it->first->isWelcomeMessageSent() << std::endl;
+		std::cout << "LE SOCKET FD = " << c_it->first->getsocketFd() << std::endl;
+		std::cout << "LE PORT = " << c_it->first->getPort() << std::endl;
+		std::cout << "L'ADRESSE IP = " << c_it->first->getIp() << std::endl;
+		std::cout << RED << "-------------------FIN DU PRINT CLIENT TROUVE-----------------------" << END << std::endl;
 		if (inChan == false)
 		{
 			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
 			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			return (0);
 		}
-		std::map<client *, bool> copy = (*it)->getListOfClients();
-		std::map<client *, bool>::iterator found_it = clMap.find(c_it->first);
-		std::cout << "FOUND_IT = " << found_it->first->getNickName() << std::endl;
-		if (found_it != c_ite)
-		{
-			std::cout << "INCHAN = " << inChan << std::endl;
-			std::cout << "ON ERASE LE CLIENT" << std::endl;
-			// (*it)->getListOfClients().erase(found_it->first);
+		// std::map<client *, bool> copy = (*it)->getListOfClients();
+		// std::map<client *, bool>::iterator found_it = clMap.find(c_it->first);
+		// std::cout << "FOUND_IT = " << found_it->first->getNickName() << std::endl;
+		// if (found_it != c_ite)
+		// {
+		// 	std::cout << "INCHAN = " << inChan << std::endl;
+		// 	std::cout << "ON ERASE LE CLIENT" << std::endl;
+		(*it)
+		(*it)->getListOfClients().erase(c_it->first)
 			// clMap.erase(found_it);
-			copy.erase(found_it);
-			// std::map<client *, bool> cl_map = (*it)->getListOfClients();
-			std::map<client *, bool>::iterator cite = copy.end();
-			for (std::map<client *, bool>::iterator cit = copy.begin(); cit != cite; cit++)
-			{
-				std::cout << "VOICI LE CANAL : " << (*it)->getName() << ". Et voici ses clients apres PART : " << cit->first->getNickName() << std::endl;
-			}
+			// copy.erase(found_it);
+		std::map<client *, bool> cl_map = (*it)->getListOfClients();
+		std::map<client *, bool>::iterator cite = cl_map.end();
+		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
+		{
+			std::cout << "VOICI LE CANAL : " << (*it)->getName() << ". Et voici ses clients apres PART : " << cit->first->getNickName() << std::endl;
 		}
+		// }
 		if ((*it)->getListOfClients().empty())
 		{
 			std::cout << BLUE1 << "LE CHANNEL EST VIDE" << END << std::endl;

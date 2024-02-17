@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/16 15:57:45 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/17 11:18:06 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@
 # define RPL_QUIT(nick, senderNick, msg)		RPL_PREFIX("999", nick) + " :" + senderNick + " " + msg + CLRF
 
 //		ERROR
-# define ERR_NOSUCHNICK(nick, errNick)				RPL_PREFIX("401", nick) + " " + errNick + " :No such nick" + CLRF
+# define ERR_NOSUCHNICK(nick, errNick)				RPL_PREFIX("401", nick) + "" + errNick + " :No such nick" + CLRF
 # define ERR_NOSUCHCHANNEL(nick, chan)				RPL_PREFIX("403", nick) + " " + chan + " :No such channel" + CLRF
 # define ERR_CANNOTSENDTOCHAN(nick, chan)			RPL_PREFIX("404", nick) + " " + chan + " :Cannot send to channel" + CLRF
 # define ERR_TOOMANYTARGETS(nick)					RPL_PREFIX("407", nick) + " :Too many targets" + CLRF
@@ -140,6 +140,9 @@
 # define INVITE_ON_CHAN(nickname, username, channel, name)					(CLIENT_ID(nickname, username, "") + " " + name + " You are invited on " + channel + " by " + nickname + "\r\n")
 # define NEEDMOREPARAMS(nickname, username, cmd)							(CLIENT_ID(nickname, username, "")  + cmd + " Error. Need more prarameters." + "\r\n")
 # define PRIVMSG_CHAN(nickname, username, dest, msg) 						(CLIENT_ID(nickname, username, "PRIVMSG") + dest + " :" + msg + "\r\n")
+// # define PRIVMSG_USER(nickname, username, name, msg) 						(CLIENT_ID(nickname, username, "PRIVMSG") + name + " :" + msg + "\r\n")
+// # define RPL_PRIVMSG(nick, username, target, message) 						(":" + nick + "!" + username + "@localhost PRIVMSG " + target + " :" + message + "\r\n")
+# define NOSUCHUSER(nickname, username, errNick) 							(CLIENT_ID(nickname, username, "PRIVMSG") + errNick + " :No such Nick" + "\r\n")
 # define PART_CHAN(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "PART") + dest + " reason :" + msg + "\r\n")
 
 # define RPL_PART(user_id, channel, reason) 								(user_id + " PART #" + channel + " " + reason + "\r\n")
