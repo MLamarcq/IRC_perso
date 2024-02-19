@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/19 13:32:31 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/19 14:00:08 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -430,7 +430,12 @@ int		command::MODE(client *client1, Server *serv)
 	{
 		bool ope = true;
 		std::cout << "DEDANS" << std::endl;
-		
+		if (temp[0][0] != '#')
+		{
+			message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), temp[0]);
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			return (0);
+		}
 		//virifier avant si il existe un - ou un + sinon le message est mal interprete
 		if ((*it)->isInThechan(client1) == false)
 		{
