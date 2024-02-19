@@ -296,8 +296,8 @@ int	channel::setChannelFirstTime(client *client1, Server *serv, std::vector<std:
 		// std::cout << "le message = " << message << std::endl;
 		return (403);
 	}
-	if (temp.size() == 2)
-		this->setPassword(temp[1]);
+	// if (temp.size() == 2)
+	// 	this->setPassword(temp[1]);
 	this->setListofClient(client1);
 	this->setOperators(client1);
 	serv->setNewChannel(this);
@@ -542,6 +542,172 @@ void	channel::setTopicEstate(std::string name, std::string username, std::string
 	return ;
 }
 
+int	channel::handleIsInvite( client *client1, Server *serv, std::vector<std::string> temp)
+{
+	int check = 0;
+	if (this->getIsInvite() == true)
+	{
+		bool isWaiting = false;
+		std::list<client *> cl_list = this->_waitingList;
+		std::list<client *>::iterator cl_it = cl_list.begin();
+		std::list<client *>::iterator cl_ite = cl_list.end();
+		std::list<client *>::iterator cl_find;
+		cl_find = std::find(cl_it, cl_ite, client1);
+		if (cl_find != cl_list.end())
+		{
+			std::cout << "TROUVEEEE" << std::endl;
+			while (cl_it != cl_ite)
+			{
+				std::cout << YELLOW << "IN THE WAITING LIST AVANT : " << (*cl_it)->getNickName() << END << std::endl;
+				if ((*cl_it)->getsocketFd() == client1->getsocketFd())
+				{
+					std::cout << PURPLE << "LES SOCKETS CORRESPONDENT" << END << std::endl;
+					// cl_it = this->_waitingList.erase(cl_it);
+					// cl_list.erase(cl_it);
+					cl_it = cl_list.erase(cl_it);
+					isWaiting = true;
+					break ;
+				}
+				cl_it++;
+			}
+			this->_waitingList = cl_list;
+			if (this->_waitingList.empty() == 0)
+			{
+				std::cout << BLUE2 << "--------------LA LISTE N'EST PAS VIDE----------------------" << END << std::endl;
+				std::list<client *> cl_list_2 = this->_waitingList;
+				std::list<client *>::iterator cl_it_2 = cl_list_2.begin();
+				std::list<client *>::iterator cl_ite_2 = cl_list_2.end();
+				while (cl_it_2 != cl_ite_2)
+				{
+					std::cout << RED << "IN THE WAITING LIST APRES : " << (*cl_it)->getNickName() << END << std::endl;
+					cl_it_2++;
+				}
+			}
+			else
+			{
+				std::cout << YELLOW << "--------------LA LISTE EST VIDE----------------------" << END << std::endl;
+			}
+		}
+		std::list<client *>::iterator new_it = this->_waitingList.begin();
+		std::list<client *>::iterator new_ite = this->_waitingList.end();
+		for(; new_it != new_ite; new_it++)
+			std::cout << PURPLE << "IN THE WAITING LIST APRES 2 : " << (*cl_it)->getNickName() << END << std::endl;
+		std::cout << "ON ARRIVE A ALLER PLUS LOIN" << std::endl;
+		if (isWaiting == false)
+		{
+			serv->setChanName(temp[0]);
+			check = 6;
+		}
+	}
+	return (check);
+}
+
+int	channel::addClientToChannel(client *client1, Server *serv, std::vector<std::string> temp)
+{
+	if (!client1)
+	{
+		std::cout << "Client doesn't exist" << std::endl;
+		return (1);
+	}
+	// if (parameter.empty())
+	// {
+	// 	std::cout << "Channel name empty, please give a complete name" << std::endl;
+	// 	return ;
+	// }
+	// std::cout << "On arrive bien jusque la" << std::endl;
+	std::cout << YELLOW << "--------------------------I AM IN ADDCLIENTTOCHANNEL------------------------" << END << std::endl;
+	std::string message;
+	// std::list<channel *>::iterator it = this->M_listOfChannels.begin();
+	// std::list<channel *>::iterator ite = this->M_listOfChannels.end();
+	// while (it != ite)
+	// {
+	if (this->getName().compare(temp[0]) == 0)
+	{
+		if (this->getNbrOfClients() >= this->getClientLimit()) //poser la question aux gars
+		{
+			std::cout << "Limit of client reach, Can't join channel" << std::endl;
+			serv->setChanName(this->getName());
+			return (471);
+		}
+		std::cout << "Password in last = " << this->getPassword() << std::endl;
+		// std::cout << "Temp[1] in last = " << temp[1] << std::endl;
+		std::cout << "resultat du empty : " << this->getPassword().empty() << std::endl;
+		if (this->getPassword().empty() == 0 && temp.size() >= 2)
+		{
+			std::cout << "resultat du compare : " << this->getPassword().compare(temp[1]) << std::endl;
+			if (this->getPassword().compare(temp[1]) == 0)
+			{
+				this->addClientToTheChannel(client1);
+				this->increaseNbrCLient();
+				this->printMap();
+				std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN AVC MDP" << std::endl;
+				this->welcomeInChanMessage(client1);
+				if (this->getTopic().empty() == 0)
+				{
+					message = RPL_TOPIC(client1->getNickName(), this->getName(), this->getTopic());
+					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+				}
+				return (0);
+			}
+			else
+			{
+				serv->setChanName(this->getName());
+				return (475);
+			}
+		}
+		else if (this->getPassword().empty() && temp.size() < 2)
+		{
+			this->addClientToTheChannel(client1);
+			this->increaseNbrCLient();
+			this->printMap();
+			std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN SANS MDP" << std::endl;
+			this->welcomeInChanMessage(client1);
+			if (this->getTopic().empty() == 0)
+			{
+				message = RPL_TOPIC(client1->getNickName(), this->getName(), this->getTopic());
+				send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			}
+			return (0);
+		}
+		else
+		{
+			serv->setChanName(this->getName());
+			return (475);
+		}
+			// std::cout << "Wrong password, can't join the channel" << std::endl;
+		// std::cout << "C1" << std::endl;
+		// break ;
+	}
+	// 	it++;
+	// }
+	// std::cout << "C2" << std::endl;
+	return (0);
+}
+
+
+
+bool	channel::isInThechan(client *client1) const
+{
+	bool res = false;
+	std::map<client *, bool>::const_iterator found = this->_listOfClients.find(client1);
+	std::map<client *, bool>::const_iterator ite = this->_listOfClients.end();
+
+	if (found != ite)
+		res = true;
+	return (res);
+}
+
+bool	channel::isOperatorInChan(client *client1) const
+{
+	bool res = false;
+	std::map<client *, bool>::const_iterator found = this->_listOfClients.find(client1);
+	// std::map<client *, bool>::iterator ite = this->_listOfClients.end();
+
+	if (found->second == true)
+		res = true;
+	return (res);
+}
+
 void	channel::sendToAllChan(std::string message)
 {
 	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
@@ -629,14 +795,62 @@ void	channel::welcomeInChanMessage(client *client1)
 	return ;
 }
 
-void	channel::eraseCLientFromChan(client *client1)
+void	channel::eraseCLientFromChan(client *client1, std::string reason)
 {
+	std::string message, tmp;
 	std::map<client *, bool>::iterator found_it = this->_listOfClients.find(client1);
-	std::map<client *, bool>::iterator ite= this->_listOfClients.end();
+	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
+	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
 	
+
+	while (it != ite)
+	{
+		std::cout << PURPLE << "-------------------ON FAIT UN PRINT DU CLIENT TROUVE DANS ERASE CLIENT FROM CHAT-----------------------" << END << std::endl;
+		std::cout << "LE NICK NAME = " << it->first->getNickName() << std::endl;
+		std::cout << "LE REAL NAME = " << it->first->getRealName() << std::endl;
+		std::cout << "LE USER NAME = " << it->first->getUserName() << std::endl;
+		std::cout << "LE HOST NAME = " << it->first->getHostName() << std::endl;
+		std::cout << "LE MODE = " << it->first->getMode() << std::endl;
+		std::cout << "LE MESSAGE DE BIENVENU A ETE ENVOYE (1 = oui) = " << it->first->isWelcomeMessageSent() << std::endl;
+		std::cout << "LE SOCKET FD = " << it->first->getsocketFd() << std::endl;
+		std::cout << "LE PORT = " << it->first->getPort() << std::endl;
+		std::cout << "L'ADRESSE IP = " << it->first->getIp() << std::endl;
+		std::cout << PURPLE << "-------------------FIN DU PRINT CLIENT TROUVE-----------------------" << END << std::endl;
+		it++;
+	}
+
 	if (found_it != ite)
 	{
 		this->_listOfClients.erase(client1);
 	}
+	std::map<client *, bool>::iterator cit = this->_listOfClients.begin();
+	std::map<client *, bool>::iterator cite = this->_listOfClients.end();
+	while (cit != cite)
+	{
+		std::cout << RED << "-------------------ON FAIT UN PRINT DU CLIENT TROUVE DANS ERASE CLIENT FROM CHAT-----------------------" << END << std::endl;
+		std::cout << "LE NICK NAME = " << cit->first->getNickName() << std::endl;
+		std::cout << "LE REAL NAME = " << cit->first->getRealName() << std::endl;
+		std::cout << "LE USER NAME = " << cit->first->getUserName() << std::endl;
+		std::cout << "LE HOST NAME = " << cit->first->getHostName() << std::endl;
+		std::cout << "LE MODE = " << cit->first->getMode() << std::endl;
+		std::cout << "LE MESSAGE DE BIENVENU A ETE ENVOYE (1 = oui) = " << cit->first->isWelcomeMessageSent() << std::endl;
+		std::cout << "LE SOCKET FD = " << cit->first->getsocketFd() << std::endl;
+		std::cout << "LE PORT = " << cit->first->getPort() << std::endl;
+		std::cout << "L'ADRESSE IP = " << cit->first->getIp() << std::endl;
+		std::cout << RED << "-------------------FIN DU PRINT CLIENT TROUVE-----------------------" << END << std::endl;
+		cit++;
+	}
+	// if (reason.empty())
+	// {
+	// 	tmp = "";
+	// 	message = KICK(client1->getNickName(), client1->getUserName(), this->getName(), client1->getNickName(), tmp);
+	// 	send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+	// }
+	// else
+	// {
+	// 	message = KICK(client1->getNickName(), client1->getUserName(), this->getName(), client1->getNickName(), reason);
+	// 	send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+	// }
+	(void)reason;
 	return ;
 }

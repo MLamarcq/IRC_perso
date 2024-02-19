@@ -42,6 +42,7 @@ Server::~Server(void)
 {
 	if (this->M_struct)
 		delete this->M_struct;
+	//penser a delete les channel + clients
 	return ;
 }
 bool containsAlphanumeric(const std::vector<std::string>& strVector) {
@@ -958,7 +959,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		{
 			std::cout << BLUE1 << "CASE 16\n" << END;
 			std::cout << "On lance PRIVMSG" << std::endl;
-				client *client1 = this->findClientBySocket(clientFd);
+			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
 				std::cout << "Client doesn't exist" << std::endl;
@@ -1000,7 +1001,6 @@ std::string	Server::executeCmd(int i, int clientFd)
 				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
-			break ;
 			break ;
 		}
 		case 19 :
@@ -1237,8 +1237,8 @@ void	Server::eraseChannelFromList(channel *chan)
 	found = std::find(this->M_listOfChannels.begin(), this->M_listOfChannels.end(), chan);
 	if (found != this->M_listOfChannels.end())
 	{
-		delete (*found);
 		this->M_listOfChannels.erase(found);
+		delete (*found);
 	}
 	return;
 }
