@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 15:08:27 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 15:36:52 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,7 +291,7 @@ std::string		command::PASS(int fd, Server* serv)
 	//clientPass = clientPass.substr(0, clientPass.length() - 1);
 	clientPass = temp[0];
 	std::cout << "c25\n";
-	if (clientPass != serv->M_pass_wd)
+	if (clientPass.compare(serv->M_pass_wd) != 0)
 	{
 		std::cout << "PASS WRONG PASS" << std::endl;
 		return (ERR_PASSWDMISMATCH(clientTmp->getNickName()));

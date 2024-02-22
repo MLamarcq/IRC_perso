@@ -7,11 +7,11 @@ Server::Server(void)
 
 Server::Server(std::string port, std::string pass_wd)
 {
-	if (port.compare("6667") != 0)
+	if (port.compare("6667") != 0 && port.compare("6697") != 0)
 		throw(WrongPortException());
 	this->M_port = port;
-	if (pass_wd.compare("0000") != 0)
-		throw(WrongPasswordException());
+	// if (pass_wd.compare("0000") != 0)
+	// 	throw(WrongPasswordException());
 	this->M_pass_wd = pass_wd;
 	this->M_struct = NULL;
 	this->M_working = true;
@@ -1451,7 +1451,7 @@ void	Server::eraseClientFromList(std::string clientNickname)
 
 const char *Server::WrongPortException::what() const throw()
 {
-	return ("Wrong port used. Please report to a port allowed by the IRC server. Port needed : 6667");
+	return ("Wrong port used. Please report to a port allowed by the IRC server. Port needed : 6667 OR 6697");
 }
 
 const char *Server::WrongPasswordException::what() const throw()

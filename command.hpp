@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 14:56:14 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 15:29:12 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@
 # define RPL_UMODEIS(nick, modes)				RPL_PREFIX("221", nick) + " :" + modes + CLRF
 # define RPL_AWAY(nick, senderNick, msg)		RPL_PREFIX("301", nick) + " " + senderNick + " " + msg + CLRF
 # define RPL_CHANNELMODEIS(channel, mode)		RPL_PREFIX("324", "") + " " + channel + " " + mode + " " + CLRF
-# define RPL_NOTOPIC(nick, chan)				RPL_PREFIX("331", nick) + " " + chan + " :No topic is set" + CLRF
+// # define RPL_NOTOPIC(nick, chan)				RPL_PREFIX("331", nick) + " " + chan + " :No topic is set" + CLRF
 # define RPL_TOPIC(nick, chan, topic)			RPL_PREFIX("332", nick) + " " + chan + " " + topic + CLRF
 # define RPL_NAMREPLY(nick, chan, names)		RPL_PREFIX("353", nick) + " = " + chan + " :" + names + CLRF
 # define RPL_ENDOFNAMES(nick, chan)				RPL_PREFIX("366", nick) + " " + chan + " :End of /NAMES list" + CLRF
@@ -171,6 +171,9 @@
 
 #define ERR_NOTONCHANNEL(nickname, username, channel, target) (std::string(":") + SERVER_NAME + " 442 " + target + " " + channel + " : his not not on that channel\r\n")
 # define ERR_KICKPRIVSNEEDED(nickname, username)						CLIENT_ID(nickname, username, "") + "You're not an operator\r\n"
+
+# define RPL_NOTOPIC(nick, chan)										RPL_PREFIX("331", nick) + chan + ":No topic is set\r\n"
+
 
 #include "server.hpp"
 

@@ -669,10 +669,11 @@ int	channel::addClientToChannel(client *client1, Server *serv, std::vector<std::
 					message = RPL_TOPIC(client1->getNickName(), this->getName(), this->getTopic());
 					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 				}
-				// else
-				// {
-				// 	Pas de topic
-				// }
+				else
+				{
+					message = RPL_NOTOPIC(client1->getNickName(), this->getName());
+					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+				}
 				message.erase();
 				message = JOIN_IN_CHAN(client1->getNickName(), client1->getUserName(), this->_name);
 				this->sendPrivMsg(client1, message);
@@ -693,6 +694,11 @@ int	channel::addClientToChannel(client *client1, Server *serv, std::vector<std::
 			if (this->getTopic().empty() == 0)
 			{
 				message = RPL_TOPIC(client1->getNickName(), this->getName(), this->getTopic());
+				send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			}
+			else
+			{
+				message = RPL_NOTOPIC(client1->getNickName(), this->getName());
 				send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			}
 			message.erase();
