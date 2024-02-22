@@ -1285,6 +1285,15 @@ int		Server::isAlpha(char c)
 
 void	Server::closeSocket(void)
 {
+	std::list<client *> clList = this->listOfClients;
+	std::list<client *>::iterator it = clList.begin();
+	std::list<client *>::iterator ite = clList.end();
+	while (it != ite)
+	{
+		if ((*it)->getsocketFd() > 2 && (*it)->getsocketFd() < 1024)
+			close((*it)->getsocketFd());
+		it++;
+	}
 	if (this->M_struct->serveurSockFd)
 		close(this->M_struct->serveurSockFd);
 	return ;
