@@ -6,7 +6,7 @@
 /*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 17:22:07 by mlamarcq         ###   ########.fr       */
+/*   Updated: 2024/02/22 18:22:25 by mlamarcq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,8 +114,6 @@ std::string		command::USER(int fd, Server* serv)
 		if (it != serv->M_cmdMap.end())
 		{
 			temp = parsTemp(serv->M_cmdMap["USER"]);
-			// char **tabSplit = ft_split(temp.c_str(), ' ');
-			// int count = std::count(temp.begin(), temp.end(), ' ');
 			if (temp.size() < 4)
 			{
 				std::string chaine;
@@ -144,14 +142,6 @@ std::string		command::USER(int fd, Server* serv)
 			}
 			
 
-			//    if (serv->findClientByUserName(tabSplit[0]) != NULL)
-		   //        return (ERR_ALREADYREGISTRED(tabSplit[0]));
-			// std::string name = tabSplit[0];
-			// name.append(clientTmp->getNickName());
-			// clientTmp->setUserName(name);
-			// clientTmp->setMode(tabSplit[1]);
-			// clientTmp->setHostName(tabSplit[2]);
-			// clientTmp->setRealName(tabSplit[3]);
 			return ("nothing");
 		}
 		else
@@ -166,7 +156,6 @@ std::string		command::USER(int fd, Server* serv)
 					chaine += *it;
 				return (ERR_NEEDMOREPARAMS(clientTmp->getNickName(), chaine));
 			}
-			for (size_t i = 0; i < temp.size(); i++)
 			if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName()) ) != NULL)
 			{
 				return (ERR_ALREADYREGISTRED(temp[0]));
@@ -212,13 +201,6 @@ std::string		command::NICK(int fd, Server* serv)
 		}
 		
 		
-		/*
-		for (unsigned int i = 0; i < arg.length(); ++i)
-		{
-			if (!std::isalnum(arg[i]) && arg[i] != '-' && arg[i] != '_')
-				return(ERR_ERRONEUSNICKNAME(arg, arg));
-		}
-		*/
 		clientTmp = serv->findClientBySocket(fd);
 		if (clientTmp)
 			clientTmp->setNickName(arg);
@@ -260,7 +242,6 @@ std::string		command::PASS(int fd, Server* serv)
 		temp = parsTemp(serv->M_cmdMap["SSPA"]);
 	}
 	
-	//temp = serv->M_cmdMap["PASS"];	
 	clientTmp = serv->findClientBySocket(fd);
 	if (clientTmp && clientTmp->isWelcomeMessageSent())
 	{
@@ -295,11 +276,6 @@ std::vector<std::string>	command::parsTemp(std::vector<std::string> temp)
 		}
 		it++;
 	}
-	// size_t size = 0;
-	// while (size < temp.size())
-	// {
-	// 	size++;
-	// }
 	return (temp);
 }
 
@@ -374,22 +350,15 @@ int		command::MODE(client *client1, Server *serv)
 	bool toggle = false;
 	std::string recup, message;
 	int check = 0;
-	size_t i = 0;
+	// size_t i = 0;
 
 	if (temp.size() <= 1)
 	{
-	 	// message = ERR_NEEDMOREPARAMS(client1->getNickName(), "MODE");
-		// send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 		return (0);
-	}
-	while (i < temp.size())
-	{
-		i++;
 	}
 	std::list<channel *> listOfChannels = serv->getListOfChannels();
 	std::list<channel *>::iterator it = listOfChannels.begin();
 	std::list<channel *>::iterator ite = listOfChannels.end();
-	if (*it)
 	while (it != ite)
 	{
 		if ((*it)->getName().compare(temp[0]) == 0)
@@ -408,7 +377,6 @@ int		command::MODE(client *client1, Server *serv)
 			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			return (0);
 		}
-		//virifier avant si il existe un - ou un + sinon le message est mal interprete
 		if ((*it)->isInThechan(client1) == false)
 		{
 			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
@@ -459,7 +427,6 @@ int		command::MODE(client *client1, Server *serv)
 				}
 				case 'k' :
 				{
-					
 					if (sign == '+')
 					{
 						if (temp.size() > 2)
@@ -504,7 +471,6 @@ int		command::MODE(client *client1, Server *serv)
 				}
 				case 'l' :
 				{
-					
 					if (sign == '+')
 					{
 						if (temp.size() > 2)
@@ -585,10 +551,6 @@ int		command::TOPIC(client *client1, Server *serv)
 		send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 		return (0);
 	}
-	while (i < temp.size())
-	{
-		i++;
-	}
 	std::list<channel *> list = serv->getListOfChannels();
 	std::list<channel *>::iterator it = list.begin();
 	std::list<channel *>::iterator ite = list.end();
@@ -605,7 +567,6 @@ int		command::TOPIC(client *client1, Server *serv)
 	{
 		if (temp.size() < 2)
 		{
-			// message = 
 			return (0);
 		}
 		else
@@ -662,7 +623,7 @@ int	command::INVITE(client *client1, Server *serv)
 	std::vector<std::string> temp;
 	bool toggle = false;
 	bool chanExist = false;
-	size_t i = 0;
+	// size_t i = 0;
 	int check = 0;
 	temp = parsTemp(serv->M_cmdMap["INVITE"]);
 	std::list<channel *> chanList = serv->getListOfChannels();
@@ -672,10 +633,6 @@ int	command::INVITE(client *client1, Server *serv)
 	if (temp.size() <= 1)
 	{
 		return (0);
-	}
-	while (i < temp.size())
-	{
-		i++;
 	}
 	while (it != ite)
 	{
@@ -736,13 +693,6 @@ int	command::INVITE(client *client1, Server *serv)
 							if (stop == false)
 							{
 								(*it)->setWaitingList(*l_it);
-								std::list<client *> cl_list = (*it)->getWaitingList();
-								std::list<client *>::iterator cl_it = cl_list.begin();
-								std::list<client *>::iterator cl_ite = cl_list.end();
-								while (cl_it != cl_ite)
-								{
-									cl_it++;
-								}
 								message = INVITE_ON_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), temp[0]);
 								send((*l_it)->getsocketFd(), message.c_str(), message.length(), 0);
 								stop = true;
@@ -832,10 +782,6 @@ int		command::PRIVMSG(client *client1, Server *serv)
 	else
 	{
 		size_t j = 1;
-		// while (j < temp.size())
-		// {
-		// 	j++;
-		// }
 		bool exist = false;
 		client *dest;
 		std::list<client *> cList = serv->getServClientList();
@@ -932,15 +878,8 @@ int	command::PART(client *client1, Server *serv)
 			return (0);
 		}
 		(*it)->eraseCLientFromChan(client1, reason);
-		std::map<client *, bool> cl_map = (*it)->getListOfClients();
-		std::map<client *, bool>::iterator cite = cl_map.end();
-		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
-		{
-		}
-		// }
 		if ((*it)->getListOfClients().empty())
 		{
-			// empty = true;
 			if (temp.size() == 2)
 				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), reason);
 			else
@@ -976,8 +915,6 @@ int	command::PART(client *client1, Server *serv)
 				message = RPL_PART(client1->getNickName(), (*it)->getName(), "");
 			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 		}
-		// if (empty == true)
-		// 	serv->eraseChannelFromList((*it));
 	}
 	else
 	{
@@ -990,11 +927,9 @@ int	command::PART(client *client1, Server *serv)
 int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
 {
 	bool toggle = false;
-	// bool empty = false;
 	std::string message, reason;
 	size_t i = 1;
 	std::vector<std::string> temp;
-	// std::map<std::string, std::vector<std::string > >::iterator m_found = serv->M_cmdMap.find("PART");
 	if (chan.empty() == 0)
 	{
 		temp.push_back(chan);
@@ -1044,15 +979,8 @@ int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
 			return (0);
 		}
 		(*it)->eraseCLientFromChan(client1, reason);
-		std::map<client *, bool> cl_map = (*it)->getListOfClients();
-		std::map<client *, bool>::iterator cite = cl_map.end();
-		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
-		{
-		}
-		// }
 		if ((*it)->getListOfClients().empty())
 		{
-			// empty = true;
 			if (temp.size() == 2)
 				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), reason);
 			else
@@ -1114,10 +1042,6 @@ int	command::KICK(int fd, Server* serv)
 	bool								InChan = false;
 	bool								ChanExist = false;
 
-	while (i < temp.size())
-	{
-		i++;
-	}
 
 	content = temp[2];
 	i = 1;
@@ -1222,17 +1146,13 @@ int	command::KICK(int fd, Server* serv)
 
 int	command::OPER(int fd, Server* serv)
 {
-	size_t						i = 0;
+	// size_t						i = 0;
 	client*						client_target;
 	client*						client_emit = serv->findClientBySocket(fd);
 	std::string					message;
 	std::vector<std::string>	temp;
 
 	temp = parsTemp(serv->M_cmdMap["OPER"]);
-	while (i < temp.size())
-	{
-		i++;
-	}
 
 	if (temp.size() != 2)
 	{
@@ -1295,15 +1215,11 @@ int	command::OPER(int fd, Server* serv)
 				{
 					message = ERR_BADOPERKEY(client_emit->getNickName(), client_emit->getUserName());
 					return (send(client_emit->getsocketFd(), message.c_str(), message.length() ,0));
-
-					// message = ERR_PASSWDMISMATCH(client_target->getNickName());
-					// return (send(client_target->getsocketFd(), message.c_str(), message.length() ,0));
 				}
 			}
 		}
 	}
 	(void)fd;
-	(void)i;
 	(void)temp;
 	return (0);
 }
@@ -1316,8 +1232,6 @@ int	command::WALLOPS(int fd, Server* serv)
 	client*						client_emit = serv->findClientBySocket(fd);
 	std::vector<std::string>	temp = parsTemp(serv->M_cmdMap["wallops"]);
 	client						*me = serv->findClientBySocket(fd);
-
-	// ERR_NEEDMOREPARAMS
 
 	if (temp.size() < 1)
 	{
@@ -1365,10 +1279,6 @@ int	command::KILL(int fd, Server* serv)
 	client*						client_target;
 
 	temp = parsTemp(serv->M_cmdMap["kill"]);
-	while (i < temp.size())
-	{
-		i++;
-	}
 
 	content = temp[0];
 	i = 1;
@@ -1411,11 +1321,6 @@ int	command::KILL(int fd, Server* serv)
 	(void)fd;
 	(void)serv;
 	return (0);
-	// ERR_NOPRIVILEGES
-	// ERR_NOSUCHNICK
-	// ERR_NEEDMOREPARAMS
-
-	// ERR_CANTKILLSERVER
 }
 
 int	command::NOTICE(int fd, Server* serv)
@@ -1428,10 +1333,6 @@ int	command::NOTICE(int fd, Server* serv)
 	client*						client_emit = serv->findClientBySocket(fd);
 
 	temp = parsTemp(serv->M_cmdMap["NOTICE"]);
-	while (i < temp.size())
-	{
-		i++;
-	}
 
 	if (temp.size() < 2)
 	{
@@ -1464,13 +1365,6 @@ int	command::NOTICE(int fd, Server* serv)
 	(void)fd;
 	(void)serv;
 	return (0);
-	// ERR_NORECIPIENT
-	// ERR_CANNOTSENDTOCHAN
-	// ERR_NOTOPLEVEL
-	// ERR_WILDTOPLEVEL
-	// ERR_TOOMANYTARGETS
-	// ERR_NOSUCHNICK
-	// RPL_AWAY
 }
 
 int	command::handleCmd(client *client1, Server *serv, std::string cmd)
@@ -1495,31 +1389,12 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 		{
 			break ;
 		}
-		// case 4 :
-		// {
-		// 	//Penser a envoyer a tous les clients du channel
-		// 	chan = serv->getChanName();
-		// 	message = NO_INVITE(client1->getNickName(), chan);
-		// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-		// }
-		// case 5 :
-		// {
-		// 	chan = serv->getChanName();
-		// 	message = YES_INVITE(client1->getNickName(), chan);
-		// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-		// }command::INVITE(client *client1, Server *serv)
 		case 6 :
 		{
 			chan = serv->getChanName();
 			message = ERR_INVITEONLYCHAN(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		}
-		// case 7 :
-		// {
-		// 	chan = serv->getChanName();
-		// 	message = TOPIC_IS_OFF(client1->getNickName(), chan);
-		// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-		// }
 		case 403 :
 		{
 			chan = serv->getChanName();
@@ -1538,21 +1413,18 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 			chan = serv->getChanName();
 			message = ERR_CHANNELISFULL(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-			//break ;
 		}
 		case 472 :
 		{
 			chan = serv->getChanName();
 			message = ERR_UNKNOWNMODE(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-			// return (0);
 		}
 		case 475 :
 		{
 			chan = serv->getChanName();
 			message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
-			//break ;
 		}
 		case 479 :
 		{
@@ -1566,7 +1438,6 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 			message = ERR_CHANOPRIVSNEEDED(chan);
 			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 			return (rtn);
-			//break ;
 		}
 		default :
 		{
@@ -1577,12 +1448,3 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 }
 
 
-// std::string		JOIN();
-// std::string		PART();
-// std::string		TOPIC();
-// std::string		KICK();
-
-// std::string		PRIVMSG();
-// std::string		NOTICE();
-// std::string		WALLOPS();
-// std::string		bot();

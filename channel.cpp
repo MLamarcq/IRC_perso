@@ -157,34 +157,11 @@ int	channel::setName(std::string parameter)
 	{
 		parameter = parameter.substr(0, r);
 	}
-	// i = 0;
-	// while (i < parameter.size())
-	// {
-	// 	i++;
-	// }
 	this->_name = parameter;
 	return (1);
 }
 void	channel::setPassword(std::string password)
 {
-	// std::string password;
-	// bool toggle = false;
-	// while (toggle == false)
-	// {
-	// 	if (!std::getline(std::cin, password))
-	// 	{
-	// 		return (0);
-	// 	}
-	// 	if (password.empty())
-	// 	{
-	// 	}
-	// 	if (isDigit(password) == 1)
-	// 	{
-	// 		this->_pswd = password;
-	// 		toggle = true;
-	// 	}
-	// 	password.erase();
-	// }
 	this->_pswd = password;
 	return ;
 }
@@ -245,34 +222,14 @@ bool	channel::isInChan(client *client1)
 	return (false);
 }
 
-// void	channel::printMap(void) const
-// {
-// 	std::map<client *, bool>::const_iterator it = this->_listOfClients.begin();
-// 	std::map<client *, bool>::const_iterator ite = this->_listOfClients.end();
-// 	while (it != ite)
-// 	{
-// 		if (it->first->getNickName().size() > 10)
-// 		else
-// 		if (it->second == true)
-// 		else
-// 		it++;
-// 	}
-// 	return ;
-// }
-
 int	channel::setChannelFirstTime(client *client1, Server *serv, std::vector<std::string> temp)
 {
 	if (this->setName(temp[0]) == 0)
 	{
 		serv->setChanName(this->getName());
-		// std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), this->getName());
-		
 		return (479);
 	}
-	// if (temp.size() == 2)
-	// 	this->setPassword(temp[1]);
 	this->setListofClient(client1);
-	// this->setOperators(client1);
 	serv->setNewChannel(this);
 	this->increaseNbrCLient();
 	return (0);
@@ -374,10 +331,6 @@ void	channel::changePrivileges(client * client_emit, std::string name, std::stri
 	}
 	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
 	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
-	// if (it == this->_listOfClients.end())
-	// {
-	// 	return ;
-	// }
 	while (it != ite)
 	{
 		if (it->first->getNickName().compare(client1) == 0)
@@ -520,32 +473,13 @@ int	channel::handleIsInvite( client *client1, Server *serv, std::vector<std::str
 			{
 				if ((*cl_it)->getsocketFd() == client1->getsocketFd())
 				{
-					// cl_it = this->_waitingList.erase(cl_it);
-					// cl_list.erase(cl_it);
 					cl_it = cl_list.erase(cl_it);
 					isWaiting = true;
 					break ;
 				}
 				cl_it++;
 			}
-			this->_waitingList = cl_list;
-			if (this->_waitingList.empty() == 0)
-			{
-				std::list<client *> cl_list_2 = this->_waitingList;
-				std::list<client *>::iterator cl_it_2 = cl_list_2.begin();
-				std::list<client *>::iterator cl_ite_2 = cl_list_2.end();
-				while (cl_it_2 != cl_ite_2)
-				{
-					cl_it_2++;
-				}
-			}
-			else
-			{
-			}
 		}
-		std::list<client *>::iterator new_it = this->_waitingList.begin();
-		std::list<client *>::iterator new_ite = this->_waitingList.end();
-		for(; new_it != new_ite; new_it++)
 		if (isWaiting == false)
 		{
 			serv->setChanName(temp[0]);
@@ -561,15 +495,7 @@ int	channel::addClientToChannel(client *client1, Server *serv, std::vector<std::
 	{
 		return (1);
 	}
-	// if (parameter.empty())
-	// {
-	// 	return ;
-	// }
 	std::string message;
-	// std::list<channel *>::iterator it = this->M_listOfChannels.begin();
-	// std::list<channel *>::iterator ite = this->M_listOfChannels.end();
-	// while (it != ite)
-	// {
 	if (this->getName().compare(temp[0]) == 0)
 	{
 		if (this->getNbrOfClients() >= this->getClientLimit()) //poser la question aux gars
@@ -630,10 +556,7 @@ int	channel::addClientToChannel(client *client1, Server *serv, std::vector<std::
 			serv->setChanName(this->getName());
 			return (475);
 		}
-		// break ;
 	}
-	// 	it++;
-	// }
 	return (0);
 }
 
@@ -654,7 +577,6 @@ bool	channel::isOperatorInChan(client *client1) const
 {
 	bool res = false;
 	std::map<client *, bool>::const_iterator found = this->_listOfClients.find(client1);
-	// std::map<client *, bool>::iterator ite = this->_listOfClients.end();
 
 	if (found->second == true)
 		res = true;
@@ -704,10 +626,6 @@ int	channel::isDigit(std::string str) const
 			return (0);
 		}
 	}
-	// if (i != 4)
-	// {
-	// 	return (0);
-	// }
 	return (1);
 }
 
@@ -738,13 +656,6 @@ void	channel::welcomeInChanMessage(client *client1)
 	{
 		return ;
 	}
-	// message.erase();
-	// message = WELCOME_CHAN(client1->getNickName(), client1->getUserName(), this->_name);
-	// toSend = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-	// if (toSend < 0)
-	// {
-	// 	return ;
-	// }
 	return ;
 }
 
@@ -752,36 +663,14 @@ void	channel::eraseCLientFromChan(client *client1, std::string reason)
 {
 	std::string message, tmp;
 	std::map<client *, bool>::iterator found_it = this->_listOfClients.find(client1);
-	std::map<client *, bool>::iterator it = this->_listOfClients.begin();
 	std::map<client *, bool>::iterator ite = this->_listOfClients.end();
 	
 
-	while (it != ite)
-	{
-		it++;
-	}
 
 	if (found_it != ite)
 	{
 		this->_listOfClients.erase(client1);
 	}
-	std::map<client *, bool>::iterator cit = this->_listOfClients.begin();
-	std::map<client *, bool>::iterator cite = this->_listOfClients.end();
-	while (cit != cite)
-	{
-		cit++;
-	}
-	// if (reason.empty())
-	// {
-	// 	tmp = "";
-	// 	message = KICK(client1->getNickName(), client1->getUserName(), this->getName(), client1->getNickName(), tmp);
-	// 	send(client1->getsocketFd(), message.c_str(), message.length(), 0);
-	// }
-	// else
-	// {
-	// 	message = KICK(client1->getNickName(), client1->getUserName(), this->getName(), client1->getNickName(), reason);
-	// 	send(client1->getsocketFd(), message.c_str(), message.length(), 0);
-	// }
 	(void)reason;
 	return ;
 }
