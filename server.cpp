@@ -555,25 +555,7 @@ int	Server::fillCmdMap(void)
 		}
 		m_it++;
 	}
-	// gérer plusieurs arguments => non chois assumé ya écrit couper command pas argument et ya pas tous les gens qui l'ont fait
-	// gérer à la fisrt connexion
-	// gérer quit
-	std::cout << "AFTER PARSING IMRANE MAP IS \n";
-	m_it = this->M_cmdMap.begin();
-	m_ite = this->M_cmdMap.end();
-
-	while (m_it != m_ite)
-	{
-		std::cout << "La map = [" << m_it->first << "] = ";
-		for (size_t i = 0; i < m_it->second.size(); ++i)
-		{
-			std::cout << m_it->second[i] << " ";
-		}
-		std::cout << std::endl;
-		m_it++;
-	}
 	
-	std::cout << "C11\n";
 	this->M_requestVector.clear();
 	return (1);
 }
