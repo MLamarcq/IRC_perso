@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 15:29:12 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 16:47:25 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,9 +163,13 @@
 #define WRONG_USER_MODE(nickname, username, channel, target, mode) 		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " can't affect channel privileges " + target + " is a server operator" + "\r\n")
 #define XQUIT(nickname, username, message) (CLIENT_ID(nickname, username, "QUIT") + ":" + message + "\r\n")
 
+#define ERR_BADCHANNAME(nick, chan)										RPL_PREFIX("479", nick) + " " + chan + " :Illegal channel name\r\n"
+
+
+
 # define JOIN_IN_CHAN(nickname, username, channel)						(CLIENT_ID(nickname, username, "JOIN")  + channel + " " + nickname + " has joigned the channel " + "\r\n")
 # define WELCOME_CHAN(nickname, username, channel)						(CLIENT_ID(nickname, username, "JOIN")  + channel + " welcome to the channel " + "\r\n")
-#define XNOTICE(nickname, username, dest, msg) (CLIENT_ID(nickname, username, "NOTICE") + dest + " :" + msg + "\r\n")
+#define XNOTICE(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "NOTICE") + dest + " :" + msg + "\r\n")
 
 #define CLIENT_NOTONCHANNEL_KICK(nickname, username, channel, target) 	(CLIENT_ID(nickname, username, "")  + channel + " " + target + " is not on the channel" + "\r\n")
 
@@ -207,6 +211,7 @@ class command {
 		int				PART(client *client1, Server *serv);
 		int				KILL(int fd, Server* serv);
 		int				NOTICE(int fd, Server* serv);
+		int				PART_QUIT(client *client1, Server *serv, std::string);
 
 		std::string		bot();
 

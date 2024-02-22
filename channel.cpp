@@ -307,8 +307,9 @@ int	channel::setChannelFirstTime(client *client1, Server *serv, std::vector<std:
 		std::cout << "ERROR CHANNEL" << std::endl;
 		std::cout << "COMMAND JOIN SOCKET FD = " << client1->getsocketFd() << std::endl;
 		// std::string message = ERR_NOSUCHCHANNEL(client1->getNickName(), this->getName());
+		
 		// std::cout << "le message = " << message << std::endl;
-		return (403);
+		return (479);
 	}
 	// if (temp.size() == 2)
 	// 	this->setPassword(temp[1]);

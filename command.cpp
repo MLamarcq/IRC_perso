@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 15:36:52 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 16:48:05 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,35 @@ std::string		command::QUIT(int fd, Server* serv)
 {
 
 	client * tempClient;
+
+	tempClient = serv->findClientBySocket(fd);
+	std::list<channel *> ChanList = serv->getListOfChannels();
+	std::list<channel *>::iterator it = ChanList.begin();
+	std::list<channel *>::iterator ite = ChanList.end();
+	while (it != ite)
+	{
+		std::map<client *, bool> ClMap = (*it)->getListOfClients();
+		std::map<client *, bool>::iterator cit = ClMap.begin();
+		std::map<client *, bool>::iterator cite = ClMap.end();
+		while (cit != cite)
+		{
+			if (cit->first->getsocketFd() == fd)
+			{
+				std::cout << "------------------------------------------------------------------------------------" << std::endl;
+				if (tempClient)
+					std::cout << "ok li" << std::endl;
+				else
+					std::cout << "nioth " << std::endl;
+				this->PART_QUIT(tempClient, serv, (*it)->getName());
+				break ;
+			}
+			cit++;
+		}
+		it++;
+	}
+
 	close(fd);
 	FD_CLR(fd, &(serv->M_struct->current_sockets));
-	tempClient = serv->findClientBySocket(fd);
 	//std::cout << "IN QUIT NICK IS " << tempClient->getNickName() << std::endl;
 	std::string message = ":localhost 403 ";
 	if (tempClient)
@@ -347,7 +373,7 @@ int		command::JOIN(client *client1, Server *serv)
 		std::cout << "No channel in the list, it will be the first !" << std::endl;
 		channel *new_one = new channel;
 		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
-		//ou utiliser QUIT
+		//ou utiliser 
 		check = new_one->setChannelFirstTime(client1, serv, temp);
 		new_one->welcomeInChanMessage(client1);
 		first_toggle = true;
@@ -1072,6 +1098,138 @@ int	command::PART(client *client1, Server *serv)
 	return (0);
 }
 
+int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
+{
+	bool toggle = false;
+	// bool empty = false;
+	std::string message, reason;
+	size_t i = 1;
+	std::vector<std::string> temp;
+	// std::map<std::string, std::vector<std::string > >::iterator m_found = serv->M_cmdMap.find("PART");
+	if (chan.empty() == 0)
+	{
+		temp.push_back(chan);
+	}
+	if (temp.size() == 0)
+		return (0);
+	std::cout << GREEN << "-------------------ON RENTRE DANS PART-----------------" << END << std::endl;
+	while (i < temp.size())
+	{
+		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
+		reason.append(temp[i]);
+		reason.append(" ");
+		i++;
+	}
+	std::cout << "REASON = " << reason << std::endl;
+	std::list<channel *> chanList = serv->getListOfChannels();
+	std::list<channel *>::iterator it = chanList.begin();
+	std::list<channel *>::iterator ite = chanList.end();
+	i = 1;
+	while (it != ite)
+	{
+		std::cout << "Le channel numero " << i << " est " << (*it)->getName() << std::endl;
+		if ((*it)->getName().compare(temp[0]) == 0)
+		{
+			std::cout << YELLOW << "CHANNEL FOUND ! LE NOM EST " << (*it)->getName() << END << std::endl;
+			toggle = true;
+			break ;
+		}
+		i++;
+		it++;
+	}
+	if (*it && toggle == true)
+	{
+		bool inChan = false;
+		std::map<client *, bool> clMap = (*it)->getListOfClients();
+		// std::map<client *, bool> clMap = (*it)->getListOfClients();
+		std::map<client *, bool>::iterator c_it = clMap.begin();
+		std::map<client *, bool>::iterator c_ite = clMap.end();
+		while (c_it != c_ite)
+		{
+			if (c_it->first->getsocketFd() == client1->getsocketFd())
+			{
+				std::cout << "CLIENT FOUND IN CHANNEL" << std::endl;
+				inChan = true;
+				break ;
+			}
+			c_it++;
+		}
+		std::cout << RED << "-------------------ON FAIT UN PRINT DU CLIENT TROUVE-----------------------" << END << std::endl;
+		std::cout << "LE NICK NAME = " << c_it->first->getNickName() << std::endl;
+		std::cout << "LE REAL NAME = " << c_it->first->getRealName() << std::endl;
+		std::cout << "LE USER NAME = " << c_it->first->getUserName() << std::endl;
+		std::cout << "LE HOST NAME = " << c_it->first->getHostName() << std::endl;
+		std::cout << "LE MODE = " << c_it->first->getMode() << std::endl;
+		std::cout << "LE MESSAGE DE BIENVENU A ETE ENVOYE (1 = oui) = " << c_it->first->isWelcomeMessageSent() << std::endl;
+		std::cout << "LE SOCKET FD = " << c_it->first->getsocketFd() << std::endl;
+		std::cout << "LE PORT = " << c_it->first->getPort() << std::endl;
+		std::cout << "L'ADRESSE IP = " << c_it->first->getIp() << std::endl;
+		std::cout << RED << "-------------------FIN DU PRINT CLIENT TROUVE-----------------------" << END << std::endl;
+		if (inChan == false)
+		{
+			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			return (0);
+		}
+		(*it)->eraseCLientFromChan(client1, reason);
+		std::map<client *, bool> cl_map = (*it)->getListOfClients();
+		std::map<client *, bool>::iterator cite = cl_map.end();
+		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
+		{
+			std::cout << "VOICI LE CANAL : " << (*it)->getName() << ". Et voici ses clients apres PART : " << cit->first->getNickName() << std::endl;
+		}
+		// }
+		if ((*it)->getListOfClients().empty())
+		{
+			std::cout << BLUE1 << "LE CHANNEL EST VIDE" << END << std::endl;
+			// empty = true;
+			if (temp.size() == 2)
+				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), reason);
+			else
+				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), "");
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			message.erase();
+			if (temp.size() == 2)
+				message = RPL_PART(client1->getNickName(), (*it)->getName(), reason);
+			else
+				message = RPL_PART(client1->getNickName(), (*it)->getName(), "");
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			//faire une fonction qui delete le cannal dans serv
+			// serv->eraseChannelFromList((*it));
+			// return (0);
+		}
+		else
+		{
+			if (temp.size() >= 2)
+				message = PART_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), reason);
+			else
+				message = PART_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), "");
+			(*it)->sendPrivMsg(client1, message);
+			message.erase();
+			if (temp.size() == 2)
+				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), reason);
+			else
+				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), "");
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+			message.erase();
+			if (temp.size() == 2)
+				message = RPL_PART(client1->getNickName(), (*it)->getName(), reason);
+			else
+				message = RPL_PART(client1->getNickName(), (*it)->getName(), "");
+			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+		}
+		// if (empty == true)
+		// 	serv->eraseChannelFromList((*it));
+	}
+	else
+	{
+		std::cout << "NO SUCH CHANNEL PART" << std::endl;
+		message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), temp[0]);
+		send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+	}
+	return (0);
+}
+
 int	command::KICK(int fd, Server* serv)
 {
 	size_t								i = 0;
@@ -1434,37 +1592,35 @@ int	command::NOTICE(int fd, Server* serv)
 		i++;
 	}
 
-	content = temp[0];
+	if (temp.size() < 2)
+	{
+		message = ERR_NEEDMOREPARAMS(client_emit->getNickName(), "NOTICE");
+		return (send(client_emit->getsocketFd(), message.c_str(), message.length() ,0));
+	}
+
 	i = 1;
 	while (i < temp.size())
 	{
-		content += temp[i];
+		content.append(temp[i]);
+		content.append(" ");
 		i++;
 	}
 
-	if (i < 1)
+	client_target = serv->findClientByNickName(temp[0]);
+	if (client_target)
 	{
-		message = ERR_NEEDMOREPARAMS(client_emit->getNickName(), "KICK");
-		return (send(client_emit->getsocketFd(), message.c_str(), message.length() ,0));
-	}
-	else
-	{
-		client_target = serv->findClientByNickName(temp[0]);
-		for (std::list<channel *>::iterator it = serv->M_listOfChannels.begin(); it != serv->M_listOfChannels.end(); it++)
+		for (std::list<client *>::iterator ite = serv->listOfClients.begin(); ite != serv->listOfClients.end(); ite++)
 		{
-			std::cout << GREEN << "(*it)->getName(): " << (*it)->getName() << RST<< std::endl;
-			for (std::map<client *, bool>::iterator ite = (*it)->_listOfClients.begin(); ite != (*it)->_listOfClients.end(); ite++)
+			std::cout << "(*ite).first->getNickName(): " << CYAN << (*ite)->getNickName() << RST << std::endl;
+			if ((*ite)->getNickName().compare(client_target->getNickName()) == 0)
 			{
-				std::cout << "(*ite).first->getNickName(): " << CYAN << (*ite).first->getNickName() << RST << std::endl;
-				if ((*ite).first->getNickName() == client_target->getNickName())
-				{
-					message = XNOTICE(client_target->getNickName(), client_emit->getNickName(), "localhost", );
-					return (send(client_emit->getsocketFd(), message.c_str(), message.length() ,0));
-				}
+				message = XNOTICE(client_emit->getNickName(), client_emit->getNickName(), client_target->getUserName(), content);
+				return (send(client_target->getsocketFd(), message.c_str(), message.length() ,0));
 			}
 		}
 	}
-
+	message = ERR_NOSUCHNICK(client_emit->getNickName(), temp[0]);
+	send(client_emit->getsocketFd(), message.c_str(), message.length(), 0);
 	(void)fd;
 	(void)serv;
 	return (0);
@@ -1567,6 +1723,12 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 			message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
 			//break ;
+		}
+		case 479 :
+		{
+			chan = serv->getChanName();
+			message = ERR_BADCHANNAME(client1->getNickName(), chan);
+			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
 		}
 		case 482 :
 		{
