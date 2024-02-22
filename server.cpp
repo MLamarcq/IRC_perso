@@ -241,12 +241,10 @@ void	Server::i_accept_connexion(void)
 	clientLen = sizeof(this->M_struct->sockStructClient);
 	std::cout << "waiting for a request..." << std::endl;
 	this->M_struct->clientSockFd = accept(this->M_struct->serveurSockFd, reinterpret_cast<struct sockaddr*>(&this->M_struct->sockStructClient), &clientLen);
-	std::cout << "New connection , socket fd is " << this->M_struct->clientSockFd << "ip is : " << inet_ntoa(this->M_struct->sockStructClient.sin_addr) << " , port : " << ntohs(this->M_struct->sockStructClient.sin_port) << std::endl;
 	if (this->M_struct->clientSockFd < 0)
 	{
 		throw (WrongClientSocketFdException());
 	}
-	std::cout << "I have accepted your request !" << std::endl;
 	this->i_handle_first_connexion();
 	return ;
 }
@@ -583,8 +581,6 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 	//std::cout << "Je suis ici et la" << std::endl;
 	bool	toggle = false;
 	std::string returnValue;
-	std::cout << PURPLE << "IM IN CHOOSE AND EXECUTE\n" << END;
-	std::cout << "c2.1\n";
 	returnValue = "nothing launch";
 	for (; m_it != m_ite; m_it++)
 	{
@@ -595,33 +591,24 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 		// 	std::cout << "ERROR SENDING" << std::endl;
 		std::vector<std::string>::iterator it = this->M_commands.begin();
 		std::vector<std::string>::iterator ite = this->M_commands.end();
-		std::cout << "La commande de MAP = " << m_it->first << std::endl;
 		for (; it != ite; it++)
 		{
 			//std::map<std::string, std::string>::iterator it_found = this->M_cmdMap.find(*(it));
 			
 			//std::cout << "L'iterateur est = " << it_found->first <<std::endl;
-			std::cout << "La commande de COMMANDS BRUTE = " << *it << std::endl;
 			//if (it_found != this->M_cmdMap.end())
 			if (m_it->first.find(*it) != std::string::npos)
 			{
 
-				std::cout << "c2.2\n";
-				std::cout << "La commande à lancer = " << *it << std::endl;
-				// std::cout << "La commande existe !" << std::endl;
-				// std::cout << "Il s'agit de " << it_found->second << std::endl;
 				toggle = true;
 				//on lance la fonction switch, on lui passe i
 				returnValue = executeCmd(i, clientFd);
 				if (returnValue == "WRONG PASS")
 					return ("WRONG PASS");
-				std::cout << "c2.3\n";
 				if (returnValue == "WRONG NICK")
 					return ("WRONG NICK");
-				std::cout << "c2.4\n";
 				if (returnValue == "WRONG USER")
 					return ("WRONG USER");
-				std::cout << "c2.5\n";
 				
 			}
 			if (toggle == true)
@@ -629,18 +616,15 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 			i++;
 		}
 	}
-	std::cout << "c2.6\n";
 	return (returnValue) ;
 }
 
 std::string	Server::executeCmd(int i, int clientFd)
 {
-	std::cout << BLUE1 << "IM IN EXCECUTE CMD\n" << END;
 	switch (i)
 	{
 		case 1 :
 		{
-			std::cout << BLUE1 << "CASE 1\n" << END;
 			client* clientPtr;
 			std::string msg;
 			std::string oldNick;
@@ -649,12 +633,9 @@ std::string	Server::executeCmd(int i, int clientFd)
 			// peut être il va manquer le code 00x
 			clientPtr = this->findClientBySocket(clientFd);
 			oldNick = clientPtr->getNickName();
-			std::cout << "On lance NICK" << std::endl;
-			std::cout << "c2.1.1\n";
 			std::string message = commandObj->NICK(clientFd, this);
 			if (message.find("nothing") == std::string::npos)
 			{
-				std::cout << "c2.1.2\n";
 				i_send_message(clientFd,message);
 				return ("WRONG NICK");
 			}
@@ -672,16 +653,12 @@ std::string	Server::executeCmd(int i, int clientFd)
 				msg.append(clientPtr->getNickName());
 				msg.append("\r\n");
 				i_send_message(clientFd, msg);
-				std::cout << "NICKNAME AFTER NICK IS " << (this->findClientBySocket(clientFd))->getNickName() << std::endl;
 			}
 			break ;
 		}
 		case 2 :
 		{
-			std::cout << BLUE1 << "CASE 2\n" << END;
-			std::cout << "On lance PASS" << std::endl;
 			std::string message = commandObj->PASS(clientFd, this);
-			std::cout << "PASS lancé" << std::endl;
 			if (message.find("nothing") == std::string::npos)
 			{
 				i_send_message(clientFd,message);
@@ -691,10 +668,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 3 :
 		{
-			std::cout << BLUE1 << "CASE 3\n" << END;
-			std::cout << "On lance PASS" << std::endl;
 			std::string message = commandObj->PASS(clientFd, this);
-			std::cout << "PASS lancé" << std::endl;
 			if (message.find("nothing") == std::string::npos)
 			{
 				i_send_message(clientFd,message);
@@ -704,12 +678,9 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 4 :
 		{
-			std::cout << BLUE1 << "CASE 4\n" << END;
 			client* clientTmp;
 
 			clientTmp = this->findClientBySocket(clientFd);
-			std::cout << "On lance USER" << std::endl;
-			std::cout << "c2.4.1\n";
 			std::string message = commandObj->USER(clientFd, this);
 			if (message.find("nothing") == std::string::npos)
 			{
@@ -717,36 +688,26 @@ std::string	Server::executeCmd(int i, int clientFd)
 				return ("WRONG USER");
 			}
 			
-			std::cout << " -------USER INFO------ " << std::endl;
-			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
-			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
-			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
-			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
 			
 			break ;
 		}
 		case 5 :
 		{
-			std::cout << "On lance MODE" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			//int sendReturn = commandObj->MODE(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "MODE");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sendind" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error mode");
 			}
 			break ;
 		}
 		case 6 :
 		{
-			std::cout << BLUE1 << "CASE 6\n" << END;
-			std::cout << "On lance PONG" << std::endl;
 			std::string message = commandObj->PING(clientFd, this);
 			i_send_message(clientFd,message);
 			return ("PING");
@@ -754,39 +715,30 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 7 :
 		{
-			std::cout << BLUE1 << "CASE 7\n" << END;
-			std::cout << "On lance QUIT" << std::endl;
 			std::string message = commandObj->QUIT(clientFd, this);
 			i_send_message(clientFd,message);
 			break ;
 		}
 		case 8 :
 		{
-			std::cout << BLUE1 << "CASE 8\n" << END;
-			std::cout << "On lance OPER" << std::endl;
 			commandObj->OPER(clientFd, this);
 			break ;
 		}
 		case 9 :
 		{
-			std::cout << BLUE1 << "CASE 9\n" << END;
-			std::cout << "On lance JOIN" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "JOIN");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			// if (message.find("nothing") == std::string::npos)
@@ -799,166 +751,129 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 10 :
 		{
-			std::cout << BLUE1 << "CASE 10\n" << END;
-			std::cout << "On lance PART" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "PART");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			break ;
 		}
 		case 11 :
 		{
-			std::cout << BLUE1 << "CASE 11\n" << END;
-			std::cout << "On lance PART" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "PART");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			break ;
 		}
 		case 12 :
 		{
-			std::cout << BLUE1 << "CASE 12\n" << END;
-			std::cout << "On lance KILL" << std::endl;
 			commandObj->KILL(clientFd, this);
 			break ;
 		}
 		case 13 :
 		{
-			std::cout << BLUE1 << "CASE 13\n" << END;
-			std::cout << "On lance KILL" << std::endl;
 			commandObj->KILL(clientFd, this);
 			break ;
 		}
 		case 14 :
 		{
-			std::cout << BLUE1 << "CASE 14\n" << END;
-			std::cout << "On lance NOTICE" << std::endl;
 			commandObj->NOTICE(clientFd, this);
 			break ;
 		}
 		case 15 :
 		{
-			std::cout << BLUE1 << "CASE 14\n" << END;
-			std::cout << "On lance TOPIC" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "TOPIC");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			break ;
 		}
 		case 16 :
 		{
-			std::cout << BLUE1 << "CASE 15\n" << END;
-			std::cout << "On lance KICK" << std::endl;
 			commandObj->KICK(clientFd, this);
 			break ;
 		}
 		case 17 :
 		{
-			std::cout << BLUE1 << "CASE 16\n" << END;
-			std::cout << "On lance PRIVMSG" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "PRIVMSG");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			break ;
 		}
 		case 18 :
 		{
-			std::cout << BLUE1 << "CASE 17\n" << END;
-			std::cout << "On lance PRIVMSG" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "PRIVMSG");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			break ;
 		}
 		case 19 :
 		{
-			std::cout << BLUE1 << "CASE 18\n" << END;
-			std::cout << "On lance WALLOPS" << std::endl;
 			commandObj->WALLOPS(clientFd, this);
 			break ;
 		}
 		case 20 :
 		{
-			std::cout << BLUE1 << "CASE 19\n" << END;
 			client* clientTmp;
 
 			clientTmp = this->findClientBySocket(clientFd);
-			std::cout << "On lance USER HOST" << std::endl;
 			std::string message = commandObj->USER(clientFd, this);
 			if (message.find("nothing") == std::string::npos)
 			{
@@ -966,47 +881,35 @@ std::string	Server::executeCmd(int i, int clientFd)
 				return ("WRONG USER");
 			}
 			
-			std::cout << " -------USER INFO------ " << std::endl;
-			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
-			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
-			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
-			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
 			
 			break ;
 		}
 		case 21 :
 		{
-			std::cout << "On lance INVITE" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
 			{
-				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
 			//int sendReturn = commandObj->JOIN(client1, this);
 			int sendReturn = commandObj->handleCmd(client1, this, "INVITE");
 			if (sendReturn == -1)
 			{
-				std::cout << "Error sending" << std::endl;
 				return ("Error Joinin channel");
 			}
 			else if (sendReturn > 0)
 			{
-				std::cout << "On va bien ici" << std::endl;
 				return ("Error Joinin channel");
 			}
 			break ;
 		}
 		default :
 		{
-			std::cout << BLUE1 << "CASE DEFAULT\n" << END;
-			std::cout << "On ne doit pas rentrer ici normalement" << std::endl;
 			//std::string message = "421  was not coded =)\r\n";
 			//i_send_message(clientFd,message);
 			break ;
 		}
 	}
-	std::cout << BLUE1 << "END EXECUTE CMD\n" << END;
 	return ("nothing");
 }
 
@@ -1019,18 +922,10 @@ void	Server::setNewChannel(channel *chan)
 {
 	if(!chan)
 	{
-		std::cout << "Channel doesn't exist" << std::endl;
 		return ;
 	}
 	this->M_listOfChannels.push_back(chan);
-	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
-	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
-	while (it != ite)
-	{
-		std::cout << "le channel : " << (*it)->getName() << std::endl;
-		std::cout << "le mot de passe : " << (*it)->getPassword() << std::endl;
-		it++;
-	}
+
 	return ;
 }
 
@@ -1127,12 +1022,10 @@ bool	Server::checkChannel(void) const
 
 void	Server::i_handle_request(int i)
 {
-	std::cout << "IM IN Handle CONNEXION\n";
 	if (requestParsing(i) == 0)
 	{
 		//this->M_requestVector.clear();
 		this->M_cmdMap.clear();
-		std::cout << PURPLE << "MAP IS CLEAR\n" << END;
 		close(i);
 		FD_CLR(i, &(this->M_struct->current_sockets));
 		return ;
@@ -1168,7 +1061,6 @@ void	Server::i_handle_request(int i)
 		{
 			//this->M_requestVector.clear();
 			this->M_cmdMap.clear();
-			std::cout << PURPLE << "MAP IS CLEAR\n" << END;
 		}
 		// this->M_args.clear();
 	}
@@ -1229,7 +1121,6 @@ void	Server::mainProgram(void)
 					// this is a new connexion
 					// accept connexion
 					i_accept_connexion();
-					std::cout << "1 if = " << i << std::endl;
 					addNewSocketToThePool(this->M_struct->clientSockFd);
 					
 				}
@@ -1237,7 +1128,6 @@ void	Server::mainProgram(void)
 				{
 					//handle connexion
 					//std::cout << "IM BACK to HANDLE REQ\n";
-					std::cout << "fd socket client/serveur = " << i << std::endl;
 					i_handle_request(i);
 					//getSignal(2);
 				}
@@ -1263,7 +1153,6 @@ void	Server::getSignal(int index)
 	}
 	else if (index == 2)
 	{
-		std::cout << "ON TEST BIEN SIGANL(2)" << std::endl;
 		memset(&sa, 0, sizeof(sa));
 		// sa.sa_handler = &Server::handle_sigpipe_static;
 		 sa.sa_handler = &Server::handle_sigint_static;
@@ -1273,7 +1162,6 @@ void	Server::getSignal(int index)
 			perror("Error setting up SIGPIPE handler");
 			return ;
 		}
-		std::cout << " SIGACTION SUCCESS" << std::endl;
 	}
 	return ;
 }
@@ -1306,7 +1194,6 @@ void	Server::handle_sigint(int signal)
 {
 	if (signal == SIGINT)
 	{
-		std::cout << "SIGINT received" << std::endl;
 		this->M_working = false;
 		//this->M_requestVector.clear();
 		closeSocket();
@@ -1337,9 +1224,6 @@ client *Server::findClientByNickName(std::string clientNickname)
 		temp = (*it)->getNickName();
 		if (temp.compare(clientNickname) == 0)
 		{
-			std::cout << "c2.1.1.3\n";
-			std::cout << "NICK IS " << clientNickname << std::endl;
-			std::cout << "client nick name found is " << (*it)->getNickName() << std::endl;
 			return (*it);
 		}
 	}
@@ -1359,8 +1243,6 @@ void	Server::eraseClientFromList(std::string clientNickname)
 			{
 				delete (*it);
 				listOfClients.erase(it);
-				//std:q:cout << "IM HERE\n";
-				//std::cout << "IM HERE 2\n";
 				return ;
 			}
 		}

@@ -181,7 +181,7 @@ void client::goodBy()
 {
 	//std::cout << "IM IN BYBY" << std::endl << "NICK IS "<<this->getNickName() << std::endl;
 	// mdr pk le début disparait
-	std::cout << GREEN << "client : " << this->getNickName() << std::endl
+	std::cout << RED << "client : " << this->getNickName() << std::endl
 	<< "is disconnected and no longer on"
 	<< " socket fd: " << this->getsocketFd()
 	<< " ip: " << this->getIp()
