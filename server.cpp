@@ -404,7 +404,7 @@ client*	Server::findClientByUserName(std::string clientUserName)
 		//if (temp.find(clientUserName) != std::string::npos)
 		//	return (*it);
 		//std::cout << "USERNAME FIND IS " << temp << std::endl;
-		if (temp.find(clientUserName) != std::string::npos)
+		if (temp.compare(clientUserName) == 0)
 		{
 			std::cout << "USERNAME FIND IS " << temp << std::endl;
 			std::cout << "CLIENT USERNAME IS " << clientUserName << std::endl;
@@ -1416,7 +1416,7 @@ client *Server::findClientByNickName(std::string clientNickname)
 	std::string temp;
 	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
 		temp = (*it)->getNickName();
-		if (temp.find(clientNickname) != std::string::npos)
+		if (temp.compare(clientNickname) == 0)
 		{
 			std::cout << "c2.1.1.3\n";
 			std::cout << "NICK IS " << clientNickname << std::endl;

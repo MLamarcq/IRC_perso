@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 13:17:45 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 15:08:27 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1086,6 +1086,8 @@ int	command::KICK(int fd, Server* serv)
 	std::map<client *, bool>::iterator	target_rm;
 	bool								emit_found = false;
 	bool								target_found = false;
+	bool								InChan = false;
+	bool								ChanExist = false;
 
 	std::cout << BOLD_YELLOW << " - KICK - " << END << std::endl;
 	while (i < temp.size())
@@ -1111,23 +1113,48 @@ int	command::KICK(int fd, Server* serv)
 	client_target = serv->findClientByNickName(temp[1]);
 	if (client_target) //&& client_emit->getOperatorStatus() == true)
 	{
-		for (std::list<channel *>::iterator it = serv->M_listOfChannels.begin(); it != serv->M_listOfChannels.end(); it++)
+		std::list<channel *>::iterator it = serv->M_listOfChannels.begin();
+		for (; it != serv->M_listOfChannels.end(); it++)
 		{
 			// check if both user are in the same channel
 			std::cout << GREEN << "(*it)->getName(): " << (*it)->getName() << RST<< std::endl;
-			emit_found = false;
-			
+			if ((*it)->getName().compare(temp[0]) == 0)
+			{
+				ChanExist = true;
+				break ;
+			}
+		}
+		if (ChanExist == false)
+		{
+			message = ERR_NOSUCHNICK(client_emit->getNickName(), temp[0]);
+			(send(client_emit->getsocketFd(), message.c_str(), message.length(), MSG_NOSIGNAL));
+		}
+		if (*it && ChanExist == true)
+		{
 			for (std::map<client *, bool>::iterator ite = (*it)->_listOfClients.begin(); ite != (*it)->_listOfClients.end(); ite++)
 			{
 				std::cout << "(*ite).first->getNickName(): " << CYAN << (*ite).first->getNickName() << RST << std::endl;
 				if ((*ite).first->getNickName() == client_emit->getNickName())
 				{
+					InChan = true;
 					if (ite->second == true)
 					{
 						emit_found = true;
 						break ;
 					}
 				}
+			}
+			if (InChan == false)
+			{
+				if (client_emit->getOperatorStatus() == false)
+				{
+					message = ERR_KICKPRIVSNEEDED(client_emit->getNickName(), client_emit->getUserName());
+					send(client_emit->getsocketFd(), message.c_str(), message.length(), MSG_NOSIGNAL);
+					return (0);
+				}
+				message = NOTONCHANNEL(client_emit->getNickName(), client_emit->getUserName(), temp[0]);
+				send(client_emit->getsocketFd(), message.c_str(), message.length(), MSG_NOSIGNAL);
+				return (0);
 			}
 			if (emit_found == false)
 			{
@@ -1138,7 +1165,7 @@ int	command::KICK(int fd, Server* serv)
 			for (std::map<client *, bool>::iterator ite = (*it)->_listOfClients.begin(); ite != (*it)->_listOfClients.end(); ite++)
 			{
 				std::cout << "(*ite).first->getNickName(): " << WHITE << (*ite).first->getNickName() << RST << std::endl;
-				if ((*ite).first->getNickName() == client_target->getNickName() && emit_found)
+				if ((*ite).first->getNickName().compare(client_target->getNickName()) && emit_found)
 				{
 					std::cout << GREEN << "    target found" << RST << std::endl;
 					target_rm = ite;
@@ -1161,12 +1188,6 @@ int	command::KICK(int fd, Server* serv)
 				message = YOU_KICK(client_emit->getNickName(), client_emit->getUserName(), (*it)->getName(), client_target->getNickName(), content);
 				send(client_target->getsocketFd(), message.c_str(), message.length(), 0);
 				return (0);
-			}
-			else
-			{
-				std::cout << RED << "target not found" << RST << std::endl;
-				message = CLIENT_NOTONCHANNEL(client_emit->getNickName(), client_emit->getUserName(), (*it)->getName(), client_target->getNickName(), "");
-				return (send(client_emit->getsocketFd(), message.c_str(), message.length(), MSG_NOSIGNAL));
 			}
 		}
 	}

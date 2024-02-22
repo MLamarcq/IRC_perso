@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 13:14:12 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 14:56:14 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@
 # define ERR_ERRONEUSNICKNAME(nick, errNick)		RPL_PREFIX("432", nick) + " " + errNick + " :Erroneous nickname" + CLRF
 # define ERR_NICKNAMEINUSE(nick, errNick)			RPL_PREFIX("435", nick) + " " + errNick + " :Nickname is already in use" + CLRF 
 # define ERR_USERNOTINCHANNEL(nick, userNick, chan)	RPL_PREFIX("441", nick) + " " + chan + " " + userNick + " :They aren't on that channel" + CLRF
-# define ERR_NOTONCHANNEL(nick, chan)				RPL_PREFIX("442", nick) + " :" + chan + " :You're not on that channel" + CLRF
+// # define ERR_NOTONCHANNEL(nick, chan)				RPL_PREFIX("442", nick) + " :" + chan + " :his not on that channel" + CLRF
 # define ERR_NEEDMOREPARAMS(nick, cmd)				RPL_PREFIX("461", nick) + " :" + cmd + " :Not enough parameters" + CLRF
 # define ERR_ALREADYREGISTRED(nick)					RPL_PREFIX("462", nick) + " :Unauthorized command (already registered)" + CLRF
 # define ERR_PASSWDMISMATCH(nick)					RPL_PREFIX("464", nick) + " :Password incorrect" + CLRF
@@ -149,7 +149,7 @@
 
 # define KICK_CHAN(nickname, username, dest, target, msg) 				(CLIENT_ID(nickname, username, "KICK") + dest + " " + target + msg + "\r\n")
 # define XKICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel + " " + target + " :" + message + "\r\n")
-# define YOU_KICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel + " " + target + " " + " " + message + "\r\n")
+# define YOU_KICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel +" " + target + " " + message + "\r\n")
 # define ERR_BADOPERKEY(nickname, username)								(CLIENT_ID(nickname, username, "OPER") + ": Operator password missmatch " + "\r\n")
 # define ISNOWOPE(nickname, username)									(CLIENT_ID(nickname, username, "OPER") + ": is now operator on " + SERVER_NAME + "\r\n")
 # define ISNOWOPE_BY_USER(nickname, username)							(CLIENT_ID(nickname, username, "OPER") + ": " + nickname + " mades you an operator on " + SERVER_NAME + "\r\n")
@@ -169,6 +169,8 @@
 
 #define CLIENT_NOTONCHANNEL_KICK(nickname, username, channel, target) 	(CLIENT_ID(nickname, username, "")  + channel + " " + target + " is not on the channel" + "\r\n")
 
+#define ERR_NOTONCHANNEL(nickname, username, channel, target) (std::string(":") + SERVER_NAME + " 442 " + target + " " + channel + " : his not not on that channel\r\n")
+# define ERR_KICKPRIVSNEEDED(nickname, username)						CLIENT_ID(nickname, username, "") + "You're not an operator\r\n"
 
 #include "server.hpp"
 
