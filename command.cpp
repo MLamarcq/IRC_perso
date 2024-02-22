@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/22 16:48:05 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 17:22:07 by mlamarcq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,11 +74,6 @@ std::string		command::QUIT(int fd, Server* serv)
 		{
 			if (cit->first->getsocketFd() == fd)
 			{
-				std::cout << "------------------------------------------------------------------------------------" << std::endl;
-				if (tempClient)
-					std::cout << "ok li" << std::endl;
-				else
-					std::cout << "nioth " << std::endl;
 				this->PART_QUIT(tempClient, serv, (*it)->getName());
 				break ;
 			}
@@ -89,7 +84,6 @@ std::string		command::QUIT(int fd, Server* serv)
 
 	close(fd);
 	FD_CLR(fd, &(serv->M_struct->current_sockets));
-	//std::cout << "IN QUIT NICK IS " << tempClient->getNickName() << std::endl;
 	std::string message = ":localhost 403 ";
 	if (tempClient)
 		message.append(tempClient->getNickName().c_str());
@@ -114,18 +108,11 @@ std::string		command::USER(int fd, Server* serv)
 	clientTmp = serv->findClientBySocket(fd);
 	// dejà j'envoi pas l'erreur mauvais args
 	// je vois pas le contenu de USER voir pk
-	//std::cout << "c1\n";
-	std::cout << "c2.4.1.1\n";
-	// std::cout << 
 	if (serv->M_cmdMap.find("USER") != serv->M_cmdMap.end() || serv->M_cmdMap.find("userhost") != serv->M_cmdMap.end())
 	{
-		//std::cout << "c2\n";
-		std::cout << "c2.4.1.2\n";
 		std::map<std::string, std::vector<std::string> > :: iterator it = serv->M_cmdMap.find("USER");
 		if (it != serv->M_cmdMap.end())
 		{
-			//std::cout << "c3\n";
-			std::cout << "c2.4.1.3\n";
 			temp = parsTemp(serv->M_cmdMap["USER"]);
 			// char **tabSplit = ft_split(temp.c_str(), ' ');
 			// int count = std::count(temp.begin(), temp.end(), ' ');
@@ -141,30 +128,22 @@ std::string		command::USER(int fd, Server* serv)
 					msg = "";
 				return (ERR_NEEDMOREPARAMS(msg, chaine));
 			}
-			std::cout << "c2.4.1.4\n";
-			//std::cout << "TABSPLIT[0] = " << tabSplit[0] << std::endl;
 			if (clientTmp)
 			{
 				if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName())) != NULL)
 				{
-					std::cout << "USER ALREADY EXIST" << std::endl;
 					return (ERR_ALREADYREGISTRED(temp[0]));
 				}
 			}
 			if (clientTmp)
 			{
-				std::cout << "c2.4.1.5\n";
 				clientTmp->setUserName(temp[0].append(clientTmp->getNickName()));
-				std::cout << "c2.4.1.6\n";
 				clientTmp->setMode(temp[1]);
-				std::cout << "c2.4.1.7\n";
 				clientTmp->setHostName(temp[2]);
-				std::cout << "c2.4.1.8\n";
 				clientTmp->setRealName(temp[3]);
 			}
 			
 
-			 std::cout << "c2.4.1.9\n";
 			//    if (serv->findClientByUserName(tabSplit[0]) != NULL)
 		   //        return (ERR_ALREADYREGISTRED(tabSplit[0]));
 			// std::string name = tabSplit[0];
@@ -177,8 +156,6 @@ std::string		command::USER(int fd, Server* serv)
 		}
 		else
 		{
-			//std::cout << "c4\n";
-			std::cout << "c2.4.1.6\n";
 			temp = parsTemp(serv->M_cmdMap["userhost"]);
 			// char **tabSplit = ft_split(temp.c_str(), ' ');
 			// int count = std::count(temp.begin(), temp.end(), ' ');
@@ -190,19 +167,14 @@ std::string		command::USER(int fd, Server* serv)
 				return (ERR_NEEDMOREPARAMS(clientTmp->getNickName(), chaine));
 			}
 			for (size_t i = 0; i < temp.size(); i++)
-				std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
-			std::cout << "c2.4.1.7\n";
 			if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName()) ) != NULL)
 			{
-				std::cout << "USER ALREADY EXIST" << std::endl;
 				return (ERR_ALREADYREGISTRED(temp[0]));
 			}
-			std::cout << "c2.4.1.8\n";
 			clientTmp->setUserName(temp[0].append(clientTmp->getNickName()));
 			clientTmp->setMode(temp[1]);
 			clientTmp->setHostName(temp[2]);
 			clientTmp->setRealName(temp[3]);
-			std::cout << "c2.4.1.9\n";
 			return ("nothing");
 		}
 	}
@@ -224,29 +196,22 @@ std::string		command::NICK(int fd, Server* serv)
 	temp = parsTemp(serv->M_cmdMap["NICK"]);
 	//size_t notSpace = temp.find_first_not_of(' ');
 	//size_t end = temp.find(' ', notSpace);
-	std::cout << "c2.1.1.1\n";
 	// 
 	//if (end == std::string::npos)
 	//{
-		std::cout << "c2.1.1.2\n";
 		//size_t lastcar = temp.find('\0');
 		//arg = temp.substr(notSpace, lastcar - 1);
-		//std::cout << "ARG IS " << arg << std::endl;
 		arg =  temp[0];
 		if (arg.empty())
 		{
-			std::cout << "NICK EMPTY" << std::endl;
 			return (ERR_NONICKNAMEGIVEN(arg));
 		}
-		std::cout << "c2.1.1.3\n";
 		if (serv->findClientByNickName(arg) != NULL)
 		{
-			std::cout << "NICK ALREADY IN USE" << std::endl;
 			return (ERR_NICKNAMEINUSE(arg, arg));
 		}
 		
 		
-		std::cout << "c2.1.1.4\n";
 		/*
 		for (unsigned int i = 0; i < arg.length(); ++i)
 		{
@@ -294,35 +259,25 @@ std::string		command::PASS(int fd, Server* serv)
 	} else {
 		temp = parsTemp(serv->M_cmdMap["SSPA"]);
 	}
-	std::cout << "c20\n";
 	
 	//temp = serv->M_cmdMap["PASS"];	
-	std::cout << "c21\n";
 	clientTmp = serv->findClientBySocket(fd);
-	std::cout << "c22\n";
 	if (clientTmp && clientTmp->isWelcomeMessageSent())
 	{
-		std::cout << "PASS CLIENT ALREADY REGISTERED NO NEED PASS" << std::endl;
 		return (ERR_ALREADYREGISTRED(clientTmp->getNickName()));
 	}
-	std::cout << "c23\n";
 	
 	if (temp[0].empty())
 	{
-		std::cout << "PASS EMPTY" << std::endl;
 		return (ERR_NEEDMOREPARAMS(clientTmp->getNickName(), "PASS"));
 	}
-	std::cout << "c24\n";
 	std::string clientPass = temp[0];
 	//clientPass = clientPass.substr(0, clientPass.length() - 1);
 	clientPass = temp[0];
-	std::cout << "c25\n";
 	if (clientPass.compare(serv->M_pass_wd) != 0)
 	{
-		std::cout << "PASS WRONG PASS" << std::endl;
 		return (ERR_PASSWDMISMATCH(clientTmp->getNickName()));
 	}
-	std::cout << "c26\n";
 	return ("nothing");
 }
 
@@ -343,7 +298,6 @@ std::vector<std::string>	command::parsTemp(std::vector<std::string> temp)
 	// size_t size = 0;
 	// while (size < temp.size())
 	// {
-	// 	std::cout << "temp[" << size << "] = " << temp[size] << std::endl;
 	// 	size++;
 	// }
 	return (temp);
@@ -370,7 +324,6 @@ int		command::JOIN(client *client1, Server *serv)
 	}
 	if (serv->checkChannel() == false)
 	{
-		std::cout << "No channel in the list, it will be the first !" << std::endl;
 		channel *new_one = new channel;
 		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
 		//ou utiliser 
@@ -388,7 +341,6 @@ int		command::JOIN(client *client1, Server *serv)
 		{
 				if ((*it)->getName().compare(temp[0]) == 0)
 				{
-					std::cout << "Channel found !" << std::endl;
 					check = (*it)->handleIsInvite(client1, serv, temp);
 					found = true;
 					break ;
@@ -426,27 +378,22 @@ int		command::MODE(client *client1, Server *serv)
 
 	if (temp.size() <= 1)
 	{
-		// std::cout << "ON RENTRE ICI" << std::endl;
 	 	// message = ERR_NEEDMOREPARAMS(client1->getNickName(), "MODE");
 		// send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 		return (0);
 	}
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		i++;
 	}
 	std::list<channel *> listOfChannels = serv->getListOfChannels();
 	std::list<channel *>::iterator it = listOfChannels.begin();
 	std::list<channel *>::iterator ite = listOfChannels.end();
-	std::cout << "ICI?" << std::endl;
 	if (*it)
-		std::cout << "it = " << (*it)->getName() << std::endl;
 	while (it != ite)
 	{
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			std::cout << "Channel found !" << std::endl;
 			toggle = true;
 			break ;
 		}
@@ -455,7 +402,6 @@ int		command::MODE(client *client1, Server *serv)
 	if (*it && toggle == true)
 	{
 		bool ope = true;
-		std::cout << "DEDANS" << std::endl;
 		if (temp[0][0] != '#')
 		{
 			message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), temp[0]);
@@ -466,7 +412,6 @@ int		command::MODE(client *client1, Server *serv)
 		if ((*it)->isInThechan(client1) == false)
 		{
 			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
-			std::cout << "NOTONCHANNEL = " << message << std::endl;
 			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			return (0);
 		}
@@ -475,14 +420,12 @@ int		command::MODE(client *client1, Server *serv)
 		{
 			int	arg = whatArg(temp);
 			int sign = whatSign(temp);
-			std::cout << "ARG = " << arg << std::endl;
 			serv->setChanName(temp[0]);
 			switch (arg)
 			{
 				case 'i' :
 				{
 					bool checkIsInvite;
-					std::cout << "C'est un i !" << std::endl;
 					if (sign == '-')
 					{
 						checkIsInvite = (*it)->getIsInvite();
@@ -504,7 +447,6 @@ int		command::MODE(client *client1, Server *serv)
 				}
 				case 't' :
 				{
-					std::cout << "C'est un t !" << std::endl;
 					if (sign == '+')
 					{
 						(*it)->setTopicEstate(client1->getNickName(), client1->getUserName(), "+t", 1);
@@ -517,7 +459,6 @@ int		command::MODE(client *client1, Server *serv)
 				}
 				case 'k' :
 				{
-					std::cout << "C'est un k !" << std::endl;
 					
 					if (sign == '+')
 					{
@@ -546,7 +487,6 @@ int		command::MODE(client *client1, Server *serv)
 				}
 				case 'o' :
 				{
-					std::cout << "C'est un o !" << std::endl;
 					if (temp.size() > 2)
 					{
 						if (sign == '+')
@@ -564,7 +504,6 @@ int		command::MODE(client *client1, Server *serv)
 				}
 				case 'l' :
 				{
-					std::cout << "C'est un l !" << std::endl;
 					
 					if (sign == '+')
 					{
@@ -642,14 +581,12 @@ int		command::TOPIC(client *client1, Server *serv)
 	
 	if (temp.size() == 0)
 	{
-		std::cout << "NO ARG" << std::endl;
 		message = ERR_NEEDMOREPARAMS(client1->getNickName(), "TOPIC");
 		send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 		return (0);
 	}
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		i++;
 	}
 	std::list<channel *> list = serv->getListOfChannels();
@@ -657,7 +594,6 @@ int		command::TOPIC(client *client1, Server *serv)
 	std::list<channel *>::iterator ite = list.end();
 	while (it != ite)
 	{
-		std::cout << "ON PASSE PAR LA" << std::endl;
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
 			toggle = true;
@@ -667,16 +603,13 @@ int		command::TOPIC(client *client1, Server *serv)
 	}
 	if (*it && toggle == true)
 	{
-		std::cout << "ON RENTRE DANS TOPIC" << std::endl;
 		if (temp.size() < 2)
 		{
-			// std::cout << "On rentre ici !" << std::endl;
 			// message = 
 			return (0);
 		}
 		else
 		{
-			std::cout << "ON RENTRE DANS TOPIC" << std::endl;
 			bool res = false;
 			std::map<client *, bool> tmp = (*it)->getListOfClients();
 			std::map<client *, bool>::iterator m_it = tmp.begin();
@@ -698,7 +631,6 @@ int		command::TOPIC(client *client1, Server *serv)
 						s_topic = s_topic.append(temp[i]) + ' ';
 						i++;
 					}
-					std::cout << "MESSAGE ENVOYE" << std::endl;
 					(*it)->setTopic(s_topic);
 					message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
 					(*it)->sendToAllChan(message);
@@ -712,7 +644,6 @@ int		command::TOPIC(client *client1, Server *serv)
 				send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			}
 		}
-		std::cout << "THE TOPIC IS " << (*it)->getTopic() << std::endl;
 	}
 	else
 	{
@@ -740,27 +671,21 @@ int	command::INVITE(client *client1, Server *serv)
 	
 	if (temp.size() <= 1)
 	{
-		std::cout << "NO ARG" << std::endl;
 		return (0);
 	}
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		i++;
 	}
 	while (it != ite)
 	{
-		std::cout << "ON PASSE PAR LA" << std::endl;
 		std::string diez = "#";
-		std::cout << "STRING AVANT = " << temp[1] << std::endl;
 		if (temp[1][0] != '#')
 		{
 			temp[1].insert(0, diez);
 		}
-		std::cout << "STRING APRES = " << temp[1] << std::endl;
 		if ((*it)->getName().compare(temp[1]) == 0)
 		{
-			std::cout << "SUCCESS !" << std::endl;
 			chanExist = true;
 			std::map<client *, bool> clients = (*it)->getListOfClients();
 			std::map<client *, bool>::iterator m_it = clients.begin();
@@ -777,7 +702,6 @@ int	command::INVITE(client *client1, Server *serv)
 			if (toggle == false)
 			{
 				message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
-				std::cout << "NOTONCHANNEL = " << message << std::endl;
 				send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			}
 			else
@@ -800,7 +724,6 @@ int	command::INVITE(client *client1, Server *serv)
 							std::map<client *, bool>::iterator c_ite = clients.end();
 							while (c_it != c_ite)
 							{
-								std::cout << "Client nickname in channel : " << c_it->first->getNickName() << std::endl;
 								if (c_it->first->getNickName().compare(temp[0]) == 0)
 								{
 									message = ERR_USERONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName(), temp[0]);
@@ -816,10 +739,8 @@ int	command::INVITE(client *client1, Server *serv)
 								std::list<client *> cl_list = (*it)->getWaitingList();
 								std::list<client *>::iterator cl_it = cl_list.begin();
 								std::list<client *>::iterator cl_ite = cl_list.end();
-								std::cout << "IN THE WAITING LIST : " << (*cl_it)->getNickName() << std::endl;
 								while (cl_it != cl_ite)
 								{
-									std::cout << "IN THE WAITING LIST : " << (*cl_it)->getNickName() << std::endl;
 									cl_it++;
 								}
 								message = INVITE_ON_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), temp[0]);
@@ -833,7 +754,6 @@ int	command::INVITE(client *client1, Server *serv)
 					if (exist == false)
 					{
 						message = ERR_NOSUCHNICK(client1->getNickName(), temp[0]);
-						std::cout << "NOSUCHNICK = " << message << std::endl;
 						send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 					}
 				}
@@ -844,7 +764,6 @@ int	command::INVITE(client *client1, Server *serv)
 	}
 	if (chanExist == false)
 	{
-		std::cout << "NO SUCH CHANNEL" << std::endl;
 		if (temp.size() > 1)
 			chan = temp[1];
 		message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), chan);
@@ -895,32 +814,26 @@ int		command::PRIVMSG(client *client1, Server *serv)
 		if (found_client == (cList.end()))
 		{
 			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
-			std::cout << "NOTONCHANNEL = " << message << std::endl;
 			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			return (0);
 		}
 		while (i < temp.size())
 		{
-			std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 			message.append(temp[i]);
 			message.append(" ");
 			i++;
 		}
-		std::cout << "MESSAGE 1 = " << message << std::endl;
 		found = message.find(":");
 		if (found != std::string::npos)
 			message.erase(found, 1);
-		std::cout << "MESSAGE 2 = " << message << std::endl;
 		to_send = PRIVMSG_CHAN(client1->getNickName(), client1->getUserName(), (*it)->getName(), message);
 		(*it)->sendPrivMsg(client1, to_send);
 	}
 	else
 	{
 		size_t j = 1;
-		// std::cout << "Taille de temp = " << temp.size() << std::endl;
 		// while (j < temp.size())
 		// {
-		// 	std::cout << "temp[" << j << "] = " << temp[j] << std::endl;
 		// 	j++;
 		// }
 		bool exist = false;
@@ -939,12 +852,10 @@ int		command::PRIVMSG(client *client1, Server *serv)
 		}
 		while (j < temp.size())
 		{
-			std::cout << "temp[" << j << "] = " << temp[j] << std::endl;
 			message.append(temp[j]);
 			message.append(" ");
 			j++;
 		}
-		std::cout << "MESSAGE 1 = " << message << std::endl;
 		found = message.find(":");
 		if (found != std::string::npos)
 			message.erase(found, 1);
@@ -952,13 +863,11 @@ int		command::PRIVMSG(client *client1, Server *serv)
 		{
 			// message = NOSUCHUSER(client1->getNickName(), client1->getUserName(), temp[0]);
 			message = ERR_NOSUCHNICK(client1->getNickName(), temp[0]);
-			std::cout << "MESSAGE = " << message << std::endl;
 			send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 			return (0);
 		}
 		// to_send = PRIVMSG_USER(client1->getNickName(), client1->getUserName(), dest->getNickName(), message);
 		to_send = PRIVMSG_CHAN	(client1->getNickName(), client1->getUserName(), dest->getNickName(), message);
-		std::cout << "TO_SEND = " << to_send << std::endl;
 		send(dest->getsocketFd(), to_send.c_str(), to_send.length(), 0);
 	}
 	(void)client1;
@@ -980,25 +889,20 @@ int	command::PART(client *client1, Server *serv)
 		temp = parsTemp(serv->M_cmdMap["RTPA"]);
 	if (temp.size() == 0)
 		return (0);
-	std::cout << GREEN << "-------------------ON RENTRE DANS PART-----------------" << END << std::endl;
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		reason.append(temp[i]);
 		reason.append(" ");
 		i++;
 	}
-	std::cout << "REASON = " << reason << std::endl;
 	std::list<channel *> chanList = serv->getListOfChannels();
 	std::list<channel *>::iterator it = chanList.begin();
 	std::list<channel *>::iterator ite = chanList.end();
 	i = 1;
 	while (it != ite)
 	{
-		std::cout << "Le channel numero " << i << " est " << (*it)->getName() << std::endl;
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			std::cout << YELLOW << "CHANNEL FOUND ! LE NOM EST " << (*it)->getName() << END << std::endl;
 			toggle = true;
 			break ;
 		}
@@ -1016,23 +920,11 @@ int	command::PART(client *client1, Server *serv)
 		{
 			if (c_it->first->getsocketFd() == client1->getsocketFd())
 			{
-				std::cout << "CLIENT FOUND IN CHANNEL" << std::endl;
 				inChan = true;
 				break ;
 			}
 			c_it++;
 		}
-		std::cout << RED << "-------------------ON FAIT UN PRINT DU CLIENT TROUVE-----------------------" << END << std::endl;
-		std::cout << "LE NICK NAME = " << c_it->first->getNickName() << std::endl;
-		std::cout << "LE REAL NAME = " << c_it->first->getRealName() << std::endl;
-		std::cout << "LE USER NAME = " << c_it->first->getUserName() << std::endl;
-		std::cout << "LE HOST NAME = " << c_it->first->getHostName() << std::endl;
-		std::cout << "LE MODE = " << c_it->first->getMode() << std::endl;
-		std::cout << "LE MESSAGE DE BIENVENU A ETE ENVOYE (1 = oui) = " << c_it->first->isWelcomeMessageSent() << std::endl;
-		std::cout << "LE SOCKET FD = " << c_it->first->getsocketFd() << std::endl;
-		std::cout << "LE PORT = " << c_it->first->getPort() << std::endl;
-		std::cout << "L'ADRESSE IP = " << c_it->first->getIp() << std::endl;
-		std::cout << RED << "-------------------FIN DU PRINT CLIENT TROUVE-----------------------" << END << std::endl;
 		if (inChan == false)
 		{
 			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
@@ -1044,12 +936,10 @@ int	command::PART(client *client1, Server *serv)
 		std::map<client *, bool>::iterator cite = cl_map.end();
 		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
 		{
-			std::cout << "VOICI LE CANAL : " << (*it)->getName() << ". Et voici ses clients apres PART : " << cit->first->getNickName() << std::endl;
 		}
 		// }
 		if ((*it)->getListOfClients().empty())
 		{
-			std::cout << BLUE1 << "LE CHANNEL EST VIDE" << END << std::endl;
 			// empty = true;
 			if (temp.size() == 2)
 				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), reason);
@@ -1091,7 +981,6 @@ int	command::PART(client *client1, Server *serv)
 	}
 	else
 	{
-		std::cout << "NO SUCH CHANNEL PART" << std::endl;
 		message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), temp[0]);
 		send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 	}
@@ -1112,25 +1001,20 @@ int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
 	}
 	if (temp.size() == 0)
 		return (0);
-	std::cout << GREEN << "-------------------ON RENTRE DANS PART-----------------" << END << std::endl;
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		reason.append(temp[i]);
 		reason.append(" ");
 		i++;
 	}
-	std::cout << "REASON = " << reason << std::endl;
 	std::list<channel *> chanList = serv->getListOfChannels();
 	std::list<channel *>::iterator it = chanList.begin();
 	std::list<channel *>::iterator ite = chanList.end();
 	i = 1;
 	while (it != ite)
 	{
-		std::cout << "Le channel numero " << i << " est " << (*it)->getName() << std::endl;
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			std::cout << YELLOW << "CHANNEL FOUND ! LE NOM EST " << (*it)->getName() << END << std::endl;
 			toggle = true;
 			break ;
 		}
@@ -1148,23 +1032,11 @@ int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
 		{
 			if (c_it->first->getsocketFd() == client1->getsocketFd())
 			{
-				std::cout << "CLIENT FOUND IN CHANNEL" << std::endl;
 				inChan = true;
 				break ;
 			}
 			c_it++;
 		}
-		std::cout << RED << "-------------------ON FAIT UN PRINT DU CLIENT TROUVE-----------------------" << END << std::endl;
-		std::cout << "LE NICK NAME = " << c_it->first->getNickName() << std::endl;
-		std::cout << "LE REAL NAME = " << c_it->first->getRealName() << std::endl;
-		std::cout << "LE USER NAME = " << c_it->first->getUserName() << std::endl;
-		std::cout << "LE HOST NAME = " << c_it->first->getHostName() << std::endl;
-		std::cout << "LE MODE = " << c_it->first->getMode() << std::endl;
-		std::cout << "LE MESSAGE DE BIENVENU A ETE ENVOYE (1 = oui) = " << c_it->first->isWelcomeMessageSent() << std::endl;
-		std::cout << "LE SOCKET FD = " << c_it->first->getsocketFd() << std::endl;
-		std::cout << "LE PORT = " << c_it->first->getPort() << std::endl;
-		std::cout << "L'ADRESSE IP = " << c_it->first->getIp() << std::endl;
-		std::cout << RED << "-------------------FIN DU PRINT CLIENT TROUVE-----------------------" << END << std::endl;
 		if (inChan == false)
 		{
 			message = NOTONCHANNEL(client1->getNickName(), client1->getUserName(), (*it)->getName());
@@ -1176,12 +1048,10 @@ int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
 		std::map<client *, bool>::iterator cite = cl_map.end();
 		for (std::map<client *, bool>::iterator cit = cl_map.begin(); cit != cite; cit++)
 		{
-			std::cout << "VOICI LE CANAL : " << (*it)->getName() << ". Et voici ses clients apres PART : " << cit->first->getNickName() << std::endl;
 		}
 		// }
 		if ((*it)->getListOfClients().empty())
 		{
-			std::cout << BLUE1 << "LE CHANNEL EST VIDE" << END << std::endl;
 			// empty = true;
 			if (temp.size() == 2)
 				message = XKICK(client1->getNickName(), client1->getUserName(), (*it)->getName(), client1->getNickName(), reason);
@@ -1223,7 +1093,6 @@ int	command::PART_QUIT(client *client1, Server *serv, std::string chan)
 	}
 	else
 	{
-		std::cout << "NO SUCH CHANNEL PART" << std::endl;
 		message = NOSUCHCHANNEL(client1->getNickName(), client1->getUserName(), temp[0]);
 		send(client1->getsocketFd(), message.c_str(), message.length(), 0);
 	}
@@ -1239,18 +1108,14 @@ int	command::KICK(int fd, Server* serv)
 	std::vector<std::string>			temp = parsTemp(serv->M_cmdMap["KICK"]);
 	client*								client_target;
 	client*								client_emit = serv->findClientBySocket(fd);
-	std::cout << "client_emit->getNickName(): " << client_emit->getNickName() << std::endl;
-	std::cout << "client_emit->getOperatorStatus(): " << client_emit->getOperatorStatus() << std::endl;
 	std::map<client *, bool>::iterator	target_rm;
 	bool								emit_found = false;
 	bool								target_found = false;
 	bool								InChan = false;
 	bool								ChanExist = false;
 
-	std::cout << BOLD_YELLOW << " - KICK - " << END << std::endl;
 	while (i < temp.size())
 	{
-		std::cout << YELLOW "kick[" << i << "] = " << temp[i] << END << std::endl;
 		i++;
 	}
 
@@ -1275,7 +1140,6 @@ int	command::KICK(int fd, Server* serv)
 		for (; it != serv->M_listOfChannels.end(); it++)
 		{
 			// check if both user are in the same channel
-			std::cout << GREEN << "(*it)->getName(): " << (*it)->getName() << RST<< std::endl;
 			if ((*it)->getName().compare(temp[0]) == 0)
 			{
 				ChanExist = true;
@@ -1291,7 +1155,6 @@ int	command::KICK(int fd, Server* serv)
 		{
 			for (std::map<client *, bool>::iterator ite = (*it)->_listOfClients.begin(); ite != (*it)->_listOfClients.end(); ite++)
 			{
-				std::cout << "(*ite).first->getNickName(): " << CYAN << (*ite).first->getNickName() << RST << std::endl;
 				if ((*ite).first->getNickName() == client_emit->getNickName())
 				{
 					InChan = true;
@@ -1322,10 +1185,8 @@ int	command::KICK(int fd, Server* serv)
 			}
 			for (std::map<client *, bool>::iterator ite = (*it)->_listOfClients.begin(); ite != (*it)->_listOfClients.end(); ite++)
 			{
-				std::cout << "(*ite).first->getNickName(): " << WHITE << (*ite).first->getNickName() << RST << std::endl;
 				if ((*ite).first->getNickName().compare(client_target->getNickName()) && emit_found)
 				{
-					std::cout << GREEN << "    target found" << RST << std::endl;
 					target_rm = ite;
 					target_found = true;
 				}
@@ -1333,14 +1194,11 @@ int	command::KICK(int fd, Server* serv)
 			}
 			if (target_found)
 			{
-				std::cout << "targetting..." << std::endl;
 				(*it)->eraseCLientFromChan(client_target, "reason");
 				message = XKICK(client_emit->getNickName(), client_emit->getUserName(), (*it)->getName(), client_target->getNickName(), content);
-				std::cout << BLUE1 << "MESSAGE = " << message << END << std::endl;
 				send(client_target->getsocketFd(), message.c_str(), message.length() ,0);
 				message.erase();
 				message = KICK_CHAN(client_emit->getNickName(), client_emit->getUserName(), (*it)->getName(), client_target->getNickName(), content);
-				std::cout << YELLOW << "MESSAGE = " << message << END << std::endl;
 				(*it)->sendToAllChan(message);
 				message.erase();
 				message = YOU_KICK(client_emit->getNickName(), client_emit->getUserName(), (*it)->getName(), client_target->getNickName(), content);
@@ -1351,8 +1209,6 @@ int	command::KICK(int fd, Server* serv)
 	}
 	else
 	{
-		// 	std::cout << "client_emit->getOperatorStatus(): " << client_emit->getNickName() << " " << client_emit->getOperatorStatus() << std::endl;
-		std::cout << BOLD_YELLOW << "CLIENT EXISTE PAS" << END << std::endl;
 		message = ERR_NOSUCHNICK(client_emit->getNickName(), temp[1]);
 		return (send(client_emit->getsocketFd(), message.c_str(), message.length(), MSG_NOSIGNAL));
 	}
@@ -1373,10 +1229,8 @@ int	command::OPER(int fd, Server* serv)
 	std::vector<std::string>	temp;
 
 	temp = parsTemp(serv->M_cmdMap["OPER"]);
-	std::cout << BOLD_YELLOW << "we are in oper" << END << std::endl;
 	while (i < temp.size())
 	{
-		std::cout << YELLOW "temp[" << i << "] = " << temp[i] << END << std::endl;
 		i++;
 	}
 
@@ -1392,7 +1246,6 @@ int	command::OPER(int fd, Server* serv)
 			client_target = serv->findClientByNickName(temp[0]);
 			if (!client_target)
 			{
-				std::cout << "no users : " << temp[0] << std::endl;
 				message = ERR_NOSUCHNICK(client_emit->getNickName(), temp[0]);
 				return (send(client_emit->getsocketFd(), message.c_str(), message.length(), 0));
 			}
@@ -1425,7 +1278,6 @@ int	command::OPER(int fd, Server* serv)
 						}
 						message = ISNOWOPE(client_emit->getNickName(), client_emit->getUserName());
 						return (send(client_emit->getsocketFd(), message.c_str(), message.length() ,0));
-						std::cout << GREEN << client_target->getNickName() << " is oper ! " << RST << std::endl;
 					}
 					else
 					{
@@ -1437,12 +1289,10 @@ int	command::OPER(int fd, Server* serv)
 						}
 						message = ISNOWOPE_BY_USER(client_emit->getNickName(), client_emit->getUserName());
 						return (send(client_target->getsocketFd(), message.c_str(), message.length() ,0));
-						std::cout << GREEN << client_target->getNickName() << " is oper ! " << RST << std::endl;
 					}
 				}
 				else
 				{
-					std::cout << RED << client_target->getNickName() << " has wrong pswd " << RST << std::endl;
 					message = ERR_BADOPERKEY(client_emit->getNickName(), client_emit->getUserName());
 					return (send(client_emit->getsocketFd(), message.c_str(), message.length() ,0));
 
@@ -1468,7 +1318,6 @@ int	command::WALLOPS(int fd, Server* serv)
 	client						*me = serv->findClientBySocket(fd);
 
 	// ERR_NEEDMOREPARAMS
-	std::cout << BOLD_YELLOW << " - WALLOPS - " << RST << std::endl;
 
 	if (temp.size() < 1)
 	{
@@ -1490,7 +1339,6 @@ int	command::WALLOPS(int fd, Server* serv)
 			if ((*it)->getOperatorStatus() && (*it)->getsocketFd() != fd)
 			{
 				message = content; // je n'ai trouve aucun rpl valable
-				std::cout << "message: " << message << std::endl;
 				to_send = PRIVMSG_WALLOPS(client_emit->getNickName(), client_emit->getUserName(), message);
 				send((*it)->getsocketFd(), to_send.c_str(), to_send.length(), 0);
 			}
@@ -1498,7 +1346,6 @@ int	command::WALLOPS(int fd, Server* serv)
 	}
 	else
 	{
-		std::cout << "not an operator" << std::endl;
 		message = ERR_WALLOPSPRIVSNEEDED(client_emit->getNickName(), client_emit->getUserName());
 		send(client_emit->getsocketFd(), message.c_str(), message.length(), 0);
 	}
@@ -1518,10 +1365,8 @@ int	command::KILL(int fd, Server* serv)
 	client*						client_target;
 
 	temp = parsTemp(serv->M_cmdMap["kill"]);
-	std::cout << BOLD_YELLOW << " - KILL - " << END << std::endl;
 	while (i < temp.size())
 	{
-		std::cout << YELLOW "kill[" << i << "] = " << temp[i] << END << std::endl;
 		i++;
 	}
 
@@ -1536,7 +1381,6 @@ int	command::KILL(int fd, Server* serv)
 	if (i == 1 || i == 2)
 	{
 		client_target = serv->findClientByNickName(temp[0]);
-		std::cout << "temp[0]: " << temp[0] << std::endl;
 		if (!client_target)
 		{
 			message = ERR_NOSUCHNICK(client_emit->getNickName(), temp[0]);
@@ -1549,7 +1393,6 @@ int	command::KILL(int fd, Server* serv)
 		}
 		else
 		{
-			std::cout << "	quit" << std::endl;
 			if (i == 1)
 				message = XQUIT(client_target->getNickName(), client_emit->getNickName(), "");
 			else
@@ -1585,10 +1428,8 @@ int	command::NOTICE(int fd, Server* serv)
 	client*						client_emit = serv->findClientBySocket(fd);
 
 	temp = parsTemp(serv->M_cmdMap["NOTICE"]);
-	std::cout << BOLD_YELLOW << " - NOTICE - " << END << std::endl;
 	while (i < temp.size())
 	{
-		std::cout << YELLOW "note[" << i << "] = " << temp[i] << END << std::endl;
 		i++;
 	}
 
@@ -1611,7 +1452,6 @@ int	command::NOTICE(int fd, Server* serv)
 	{
 		for (std::list<client *>::iterator ite = serv->listOfClients.begin(); ite != serv->listOfClients.end(); ite++)
 		{
-			std::cout << "(*ite).first->getNickName(): " << CYAN << (*ite)->getNickName() << RST << std::endl;
 			if ((*ite)->getNickName().compare(client_target->getNickName()) == 0)
 			{
 				message = XNOTICE(client_emit->getNickName(), client_emit->getNickName(), client_target->getUserName(), content);
@@ -1653,7 +1493,6 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 	{
 		case 0 :
 		{
-			std::cout << "COMMAND SUCCESS" << std::endl;
 			break ;
 		}
 		// case 4 :
@@ -1661,34 +1500,29 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 		// 	//Penser a envoyer a tous les clients du channel
 		// 	chan = serv->getChanName();
 		// 	message = NO_INVITE(client1->getNickName(), chan);
-		// 	std::cout << "MESSAGE = " << message << std::endl;
 		// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		// }
 		// case 5 :
 		// {
 		// 	chan = serv->getChanName();
 		// 	message = YES_INVITE(client1->getNickName(), chan);
-		// 	std::cout << "MESSAGE = " << message << std::endl;
 		// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		// }command::INVITE(client *client1, Server *serv)
 		case 6 :
 		{
 			chan = serv->getChanName();
 			message = ERR_INVITEONLYCHAN(client1->getNickName(), chan);
-			std::cout << "MESSAGE = " << message << std::endl;
 			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		}
 		// case 7 :
 		// {
 		// 	chan = serv->getChanName();
 		// 	message = TOPIC_IS_OFF(client1->getNickName(), chan);
-		// 	std::cout << "MESSAGE = " << message << std::endl;
 		// 	return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		// }
 		case 403 :
 		{
 			chan = serv->getChanName();
-			std::cout << "ERROR 403" << std::endl;
 			message = ERR_NOSUCHCHANNEL(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
 			break ;
@@ -1697,7 +1531,6 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 		{
 			chan = serv->getChanName();
 			message = ERR_NEEDMOREPARAMS(client1->getNickName(), cmd);
-			std::cout << "MESSAGE = " << message << std::endl;
 			return (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
 		}
 		case 471 :
@@ -1710,16 +1543,13 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 		case 472 :
 		{
 			chan = serv->getChanName();
-			std::cout << "chan = " << chan << std::endl;
 			message = ERR_UNKNOWNMODE(client1->getNickName(), chan);
-			std::cout << "MESSAGE = " << message << std::endl;
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
 			// return (0);
 		}
 		case 475 :
 		{
 			chan = serv->getChanName();
-			std::cout << "ERROR 475" << std::endl;
 			message = ERR_BADCHANNELKEY(client1->getNickName(), chan);
 			return (send(client1->getsocketFd(), message.c_str(), message.length() ,0));
 			//break ;
@@ -1733,19 +1563,13 @@ int	command::handleCmd(client *client1, Server *serv, std::string cmd)
 		case 482 :
 		{
 			chan = serv->getChanName();
-			std::cout << "NOM DU CHANNEL 482 = " << chan << std::endl;
-			std::cout << "client1->getNickName(): " << client1->getNickName() << std::endl;
-			std::cout << "client1->getsocketFd(): " << client1->getsocketFd() << std::endl;
 			message = ERR_CHANOPRIVSNEEDED(chan);
-			std::cout << "Message = " << message << std::endl;
 			int rtn = (send(client1->getsocketFd(), message.c_str(), message.length(), 0));
-			std::cout << rtn << std::endl;
 			return (rtn);
 			//break ;
 		}
 		default :
 		{
-			std::cout << "ERROR" << std::endl;
 			break ;
 		}
 	}
