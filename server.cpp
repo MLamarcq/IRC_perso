@@ -254,7 +254,6 @@ void	Server::i_accept_connexion(void)
 void	Server::i_handle_first_connexion(void)
 {
 	
-	std::cout << "IM IN FIRST CONNEXION\n";
 
 	char buff[513];
 	std::string nickname;
@@ -274,13 +273,11 @@ void	Server::i_handle_first_connexion(void)
 	clientPtr = this->createClient();
 	clientPtr->setNickName("NotSetYet");
 	clientPtr->setsocketFd(this->M_struct->clientSockFd);
-	std::cout << "FIRST CONNEXION SOCKET FD = " << clientPtr->getsocketFd() << std::endl;
 	clientPtr->setIp(inet_ntoa(this->M_struct->sockStructClient.sin_addr));
 	clientPtr->setPort(ntohs(this->M_struct->sockStructClient.sin_port));
 	//ajouter le client dans la liste
 	this->listOfClients.push_back(clientPtr);
 	
-	std::cout << "c1\n";
 	int countCommand = 0;
 	if (this->M_cmdMap.empty())
 	{
@@ -305,11 +302,8 @@ void	Server::i_handle_first_connexion(void)
 			countCommand++;
 		m_it++;
 	}
-	std::cout << "c2\n";
 	if (countCommand != 3)
 	{
-		std::cout << "c2.1\n";
-		std::cout << RED << "PAS NICK PASS & USER" << END <<std::endl;
 		//this->M_requestVector.clear();
 		//this->M_cmdMap.clear();
 		if (clientPtr)
@@ -319,8 +313,6 @@ void	Server::i_handle_first_connexion(void)
 	std::string returnValue = chooseAndExecuteAction(this->M_struct->clientSockFd);
 	if (returnValue == "WRONG PASS" || returnValue == "WRONG USER" || returnValue == "WRONG NICK")
 	{
-		std::cout << "c3\n";
-		std::cout << returnValue << std::endl;
 		//this->M_requestVector.clear();
 		this->M_cmdMap.clear();
 		if (clientPtr)
@@ -333,7 +325,6 @@ void	Server::i_handle_first_connexion(void)
 	sendWelcomeMessage(clientPtr);
 	
 	memset(buff, 0, 513);
-	std::cout << "c4\n";
 
 
 }
@@ -345,10 +336,8 @@ int	Server::requestParsing(int ClientFd)
 	size_t	find_r = 0;
 	size_t	find_n = 0;
 	int		count = 0;
-	std::cout << BLUE2 << "--------------IM IN REQUEST PARSING----------------\n" << END;
-	std::cout << "c1.1\n";
+
 	reader = read(ClientFd, buff, 512);
-	std::cout << "read value is " << reader << std::endl;
 	if (reader == -1)
 	{
 		std::cout << "Error reading. Please check client socket." << std::endl;
@@ -358,15 +347,11 @@ int	Server::requestParsing(int ClientFd)
 	{
 		std::string message = commandObj->QUIT(ClientFd, this);
 		i_send_message(ClientFd,message);
-		std::cout << "NOTHING TO READ\n";
 		return (0);
 	}
 	
-	std::cout << "c1.2\n";
 	buff[reader] = '\0';
-	std::cout << "BUFF IS : " << buff << std::endl;
 	std::string tmp(buff);
-	std::cout << "tmp = " << tmp << std::endl;
 	size_t size  = tmp.size();
 	// std::cout << "Request size = " << size << std::endl;
 	while (find_n < size - 1)
@@ -375,24 +360,15 @@ int	Server::requestParsing(int ClientFd)
 		find_n = tmp.find('\n', find_n + 1);
 		if (find_r == std::string::npos /*|| find_n == std::string::npos*/)
 		{
-			std::cout << "IN REQUEST PARSING\n";
-			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
 			return (0);
 		}
 		count++;
 	}
-	std::cout << "c1.3\n";
-	std::cout << "find_r = " << find_r << std::endl;
-	std::cout << "find_n = " << find_n << std::endl;
-	std::cout << "count = " << count << std::endl;
-	std::cout << "Tout s'est bien passe" << std::endl;
+
 	if (fillVectorRequest(count, tmp) == 0)
 		return (0);
-	std::cout << "c1.4\n";
 	if (fillCmdMap() == 0)
 		return (0);
-	// putRequestArgInVector();
-	std::cout << "c1.5\n";
 	return (1);
 }
 
@@ -406,8 +382,6 @@ client*	Server::findClientByUserName(std::string clientUserName)
 		//std::cout << "USERNAME FIND IS " << temp << std::endl;
 		if (temp.compare(clientUserName) == 0)
 		{
-			std::cout << "USERNAME FIND IS " << temp << std::endl;
-			std::cout << "CLIENT USERNAME IS " << clientUserName << std::endl;
 			return (*it);
 		}
 	}
@@ -433,20 +407,16 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 {
 	size_t token = 0;
 	int i = 0;
-	std::cout << BLUE3 << "--------------IM IN FILL VECTOR REQUEST----------------\n" << END;
 	while (i < count)
 	{
 		std::string string_copy = tmp;
 		std::string temp;
-		std::cout << "string_copy IS " << string_copy << std::endl;
 		token = string_copy.find('\n');
 		if (token == std::string::npos)
 		{
-			std::cout << "IN FILL VECTOR REQUEST\n";
-			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
+
 		
 			temp = string_copy;
-			std::cout << "TEMP IS " << temp << std::endl;
 			this->M_requestVector.push_back(temp);
 			temp.erase();
 			i++;
@@ -455,7 +425,6 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 		else
 		{
 			temp = string_copy.substr(0, token);
-			std::cout << "TEMP IS " << temp << std::endl;
 			this->M_requestVector.push_back(temp);
 			temp.erase();
 			tmp = tmp.substr(token + 1, tmp.size());
@@ -468,18 +437,14 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 
 int	Server::fillCmdMap(void)
 {
-	std::cout << RED << "--------------IM IN FILL CMD MAP----------------\n" << END;
-	std::cout << "REQUEST VECTOR IS\n";
 	std::vector<std::string>::iterator it = this->M_requestVector.begin();
 	std::vector<std::string>::iterator ite = this->M_requestVector.end();
 	while (it != ite)
 	{
-		std::cout << *it << std::endl;
 		it++;
 	}
 	if (this->M_requestVector.empty())
 	{
-		std::cout << "Request vector empty" << std::endl;
 		return (1);
 	}
 	std::string first;
@@ -488,8 +453,6 @@ int	Server::fillCmdMap(void)
 	std::vector<std::string> temp2;
 	it = this->M_requestVector.begin();
 	ite = this->M_requestVector.end();
-	std::cout << "C6\n";
-	std::cout << YELLOW << "JE REMPLIS LA MAP\n" << END;
 	std::map< std::string, std::vector<std::string> >::iterator mi_it;
 	
 	while (it != ite)
@@ -497,12 +460,7 @@ int	Server::fillCmdMap(void)
 		size_t space = it->find(' ');
 		if (space == std::string::npos)
 		{
-			std::cout << "C7\n";
-			std::cout << "REMPLI LA MAP SI CMD PAS DARGUMENTS\n";
 			first = it->c_str();
-			std::cout << "first = " << first << std::endl;
-			//temp = split_string_v2(second, ' ');
-			//temp1[0] = "";
 			temp1.push_back("");
 			temp1[0] = "";
 			mi_it = this->M_cmdMap.find(first);
@@ -510,20 +468,16 @@ int	Server::fillCmdMap(void)
 			{
 				if (first != "")
 				{
-					std::cout << "C7.1\n";
 					this->M_cmdMap[first] = temp1;
 					int count = temp1.size();
 					int i = 0;
-					std::cout << "ARGV VECTOR AS " << count << " ELEMENTS\n";
 					while (i < count)
 					{
-						std::cout << i <<" ARG IS " << temp1[i] << std::endl;
 						i++;
 					}
 				}
 				else
 				{
-					std::cout << "C7.2\n";
 					temp1.push_back("");
 					temp1[0] = second;
 					this->M_cmdMap[first] = temp1;
@@ -534,37 +488,27 @@ int	Server::fillCmdMap(void)
 		}
 		else 
 		{
-			std::cout << "C8\n";
-			std::cout << "REMPLI LA MAP SI CMD ARGUMENT \n";
 			first = it->substr(0, space);
-			std::cout << "first = " << first << std::endl;
 			second = it->substr(space + 1, it->size());
-			std::cout << "second = " << second << std::endl;
 
 			mi_it = this->M_cmdMap.find(first);
 			if ((mi_it == this->M_cmdMap.end()) || first == "")
 			{
-				std::cout << "C8.1\n";
 				if (first != "")
 				{
-					std::cout << "C8.2\n";
 					temp2 = split_string_v2(second, ' ');
 					int count = temp2.size();
 					int i = 0;
-					std::cout << "ARGV VECTOR AS " << count << " ELEMENTS\n";
 					while (i < count)
 					{
-						std::cout << i <<" ARG IS " << temp2[i] << std::endl;
 						i++;
 					}
 					this->M_cmdMap[first] = temp2;
 				}
 				else
 				{
-					std::cout << "C8.3\n";
 					temp1.push_back("");
 					temp1[0] = second;
-					std::cout << "C8.5\n";
 					this->M_cmdMap[first] = temp1;
 				}
 			}
@@ -575,20 +519,8 @@ int	Server::fillCmdMap(void)
 
 	std::map<std::string, std::vector<std::string> >::iterator m_it = this->M_cmdMap.begin();
 	std::map<std::string, std::vector<std::string> >::iterator m_ite = this->M_cmdMap.end();
-	std::cout << YELLOW << "JAFFICHE LA MAP REMPLIE\n" << END;
-	while (m_it != m_ite)
-	{
-		std::cout << "C9\n";
-		std::cout << "La map = [" << m_it->first << "] = ";
-		for (size_t i = 0; i < m_it->second.size(); ++i)
-		{
-			std::cout << m_it->second[i] << " ";
-		}
-		std::cout << std::endl;
-		m_it++;
-	}
+	
 
-	std::cout << YELLOW << "JE GERE CTRL D\n" << END;
 	m_it = this->M_cmdMap.begin();
 	m_ite = this->M_cmdMap.end();
 
@@ -601,16 +533,12 @@ int	Server::fillCmdMap(void)
 		{
 			std::string tempKey;
 			std::string tempValue;
-			std::cout << "C10\n";
 			tempValue = m_it->second[0];
-			std::cout << "TEMP VALUE IS " << tempValue << std::endl;
 			while (m_it2 != m_ite2)
 			{
 				m_ite2--;
-				std::cout << "C10.1\n";
 				if (!containsAlphanumeric(m_ite2->second))
 				{
-					std::cout << "C10.2\n";
 					tempKey.append(m_ite2->first);
 					m_ite2->second.push_back("DONE");
 				}
