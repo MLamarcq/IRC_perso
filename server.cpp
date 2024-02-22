@@ -42,6 +42,32 @@ Server::~Server(void)
 {
 	if (this->M_struct)
 		delete this->M_struct;
+	if (!this->listOfClients.empty())
+	{
+		std::list<client *> clList = this->listOfClients;
+		std::list<client *>::iterator it = clList.begin();
+		std::list<client *>::iterator ite = clList.end();
+		
+		while (it != ite)
+		{
+			delete (*it);
+			// clList.erase(it);
+			it++;
+		}
+	}
+	if (!this->M_listOfChannels.empty())
+	{
+		std::list<channel *> chList = this->M_listOfChannels;
+		std::list<channel *>::iterator ch_it = chList.begin();
+		std::list<channel *>::iterator ch_ite = chList.end();
+		
+		while (ch_it != ch_ite)
+		{
+			delete (*ch_it);
+			// clList.erase(it);
+			ch_it++;
+		}
+	}
 	//penser a delete les channel + clients
 	return ;
 }
@@ -147,14 +173,14 @@ void	Server::fill_commands_vector(void)
 	this->M_commands.push_back("JOIN");
 	this->M_commands.push_back("PART");
 	this->M_commands.push_back("RTPA");
-	this->M_commands.push_back("KILL");
-	this->M_commands.push_back("LLKI");
+	this->M_commands.push_back("kill");
+	this->M_commands.push_back("llki");
 	this->M_commands.push_back("NOTICE");
 	this->M_commands.push_back("TOPIC");
 	this->M_commands.push_back("KICK");
 	this->M_commands.push_back("PRIVMSG");
 	this->M_commands.push_back("VMSGPRI");
-	this->M_commands.push_back("WALLOPS");
+	this->M_commands.push_back("wallops");
 	this->M_commands.push_back("userhost");
 	this->M_commands.push_back("INVITE");
 	return ;
@@ -286,8 +312,8 @@ void	Server::i_handle_first_connexion(void)
 		std::cout << RED << "PAS NICK PASS & USER" << END <<std::endl;
 		//this->M_requestVector.clear();
 		//this->M_cmdMap.clear();
-	
-		this->eraseClientFromList(clientPtr->getNickName());
+		if (clientPtr)
+			this->eraseClientFromList(clientPtr->getNickName());
 		return ;
 	}
 	std::string returnValue = chooseAndExecuteAction(this->M_struct->clientSockFd);
@@ -297,7 +323,8 @@ void	Server::i_handle_first_connexion(void)
 		std::cout << returnValue << std::endl;
 		//this->M_requestVector.clear();
 		this->M_cmdMap.clear();
-		this->eraseClientFromList(clientPtr->getNickName());
+		if (clientPtr)
+			this->eraseClientFromList(clientPtr->getNickName());
 		return ;
 	}
 	//this->M_requestVector.clear();
@@ -827,6 +854,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		{
 			std::cout << BLUE1 << "CASE 8\n" << END;
 			std::cout << "On lance OPER" << std::endl;
+			commandObj->OPER(clientFd, this);
 			break ;
 		}
 		case 9 :
@@ -911,18 +939,21 @@ std::string	Server::executeCmd(int i, int clientFd)
 		{
 			std::cout << BLUE1 << "CASE 12\n" << END;
 			std::cout << "On lance KILL" << std::endl;
+			commandObj->KILL(clientFd, this);
 			break ;
 		}
 		case 13 :
 		{
 			std::cout << BLUE1 << "CASE 13\n" << END;
 			std::cout << "On lance KILL" << std::endl;
+			commandObj->KILL(clientFd, this);
 			break ;
 		}
 		case 14 :
 		{
 			std::cout << BLUE1 << "CASE 14\n" << END;
 			std::cout << "On lance NOTICE" << std::endl;
+			commandObj->NOTICE(clientFd, this);
 			break ;
 		}
 		case 15 :
@@ -953,6 +984,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		{
 			std::cout << BLUE1 << "CASE 15\n" << END;
 			std::cout << "On lance KICK" << std::endl;
+			commandObj->KICK(clientFd, this);
 			break ;
 		}
 		case 17 :
@@ -1007,6 +1039,7 @@ std::string	Server::executeCmd(int i, int clientFd)
 		{
 			std::cout << BLUE1 << "CASE 18\n" << END;
 			std::cout << "On lance WALLOPS" << std::endl;
+			commandObj->WALLOPS(clientFd, this);
 			break ;
 		}
 		case 20 :
@@ -1091,87 +1124,87 @@ void	Server::setNewChannel(channel *chan)
 	return ;
 }
 
-int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
-{
-	if (!client1)
-	{
-		std::cout << "Client doesn't exist" << std::endl;
-		return (1);
-	}
-	// if (parameter.empty())
-	// {
-	// 	std::cout << "Channel name empty, please give a complete name" << std::endl;
-	// 	return ;
-	// }
-	// std::cout << "On arrive bien jusque la" << std::endl;
-	std::cout << YELLOW << "--------------------------I AM IN ADDCLIENTTOCHANNEL------------------------" << END << std::endl;
-	std::string message;
-	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
-	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
-	while (it != ite)
-	{
-		if ((*it)->getName().compare(temp[0]) == 0)
-		{
-			if ((*it)->getNbrOfClients() >= (*it)->getClientLimit()) //poser la question aux gars
-			{
-				std::cout << "Limit of client reach, Can't join channel" << std::endl;
-				this->setChanName((*it)->getName());
-				return (471);
-			}
-			std::cout << "Password in last = " << (*it)->getPassword() << std::endl;
-			// std::cout << "Temp[1] in last = " << temp[1] << std::endl;
-			std::cout << "resultat du empty : " << (*it)->getPassword().empty() << std::endl;
-			if ((*it)->getPassword().empty() == 0 && temp.size() >= 2)
-			{
-				std::cout << "resultat du compare : " << (*it)->getPassword().compare(temp[1]) << std::endl;
-				if ((*it)->getPassword().compare(temp[1]) == 0)
-				{
-					(*it)->addClientToTheChannel(client1);
-					(*it)->increaseNbrCLient();
-					(*it)->printMap();
-					std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN AVC MDP" << std::endl;
-					(*it)->welcomeInChanMessage(client1);
-					if ((*it)->getTopic().empty() == 0)
-					{
-						message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
-						send(client1->getsocketFd(), message.c_str(), message.length(), 0);
-					}
-					return (0);
-				}
-				else
-				{
-					this->setChanName((*it)->getName());
-					return (475);
-				}
-			}
-			else if ((*it)->getPassword().empty() && temp.size() < 2)
-			{
-				(*it)->addClientToTheChannel(client1);
-				(*it)->increaseNbrCLient();
-				(*it)->printMap();
-				std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN SANS MDP" << std::endl;
-				(*it)->welcomeInChanMessage(client1);
-				if ((*it)->getTopic().empty() == 0)
-				{
-					message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
-					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
-				}
-				return (0);
-			}
-			else
-			{
-				this->setChanName((*it)->getName());
-				return (475);
-			}
-				// std::cout << "Wrong password, can't join the channel" << std::endl;
-			// std::cout << "C1" << std::endl;
-			break ;
-		}
-		it++;
-	}
-	// std::cout << "C2" << std::endl;
-	return (0);
-}
+// int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
+// {
+// 	if (!client1)
+// 	{
+// 		std::cout << "Client doesn't exist" << std::endl;
+// 		return (1);
+// 	}
+// 	// if (parameter.empty())
+// 	// {
+// 	// 	std::cout << "Channel name empty, please give a complete name" << std::endl;
+// 	// 	return ;
+// 	// }
+// 	// std::cout << "On arrive bien jusque la" << std::endl;
+// 	std::cout << YELLOW << "--------------------------I AM IN ADDCLIENTTOCHANNEL------------------------" << END << std::endl;
+// 	std::string message;
+// 	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
+// 	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
+// 	while (it != ite)
+// 	{
+// 		if ((*it)->getName().compare(temp[0]) == 0)
+// 		{
+// 			if ((*it)->getNbrOfClients() >= (*it)->getClientLimit()) //poser la question aux gars
+// 			{
+// 				std::cout << "Limit of client reach, Can't join channel" << std::endl;
+// 				this->setChanName((*it)->getName());
+// 				return (471);
+// 			}
+// 			std::cout << "Password in last = " << (*it)->getPassword() << std::endl;
+// 			// std::cout << "Temp[1] in last = " << temp[1] << std::endl;
+// 			std::cout << "resultat du empty : " << (*it)->getPassword().empty() << std::endl;
+// 			if ((*it)->getPassword().empty() == 0 && temp.size() >= 2)
+// 			{
+// 				std::cout << "resultat du compare : " << (*it)->getPassword().compare(temp[1]) << std::endl;
+// 				if ((*it)->getPassword().compare(temp[1]) == 0)
+// 				{
+// 					(*it)->addClientToTheChannel(client1);
+// 					(*it)->increaseNbrCLient();
+// 					(*it)->printMap();
+// 					std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN AVC MDP" << std::endl;
+// 					(*it)->welcomeInChanMessage(client1);
+// 					if ((*it)->getTopic().empty() == 0)
+// 					{
+// 						message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
+// 						send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+// 					}
+// 					return (0);
+// 				}
+// 				else
+// 				{
+// 					this->setChanName((*it)->getName());
+// 					return (475);
+// 				}
+// 			}
+// 			else if ((*it)->getPassword().empty() && temp.size() < 2)
+// 			{
+// 				(*it)->addClientToTheChannel(client1);
+// 				(*it)->increaseNbrCLient();
+// 				(*it)->printMap();
+// 				std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN SANS MDP" << std::endl;
+// 				(*it)->welcomeInChanMessage(client1);
+// 				if ((*it)->getTopic().empty() == 0)
+// 				{
+// 					message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
+// 					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+// 				}
+// 				return (0);
+// 			}
+// 			else
+// 			{
+// 				this->setChanName((*it)->getName());
+// 				return (475);
+// 			}
+// 				// std::cout << "Wrong password, can't join the channel" << std::endl;
+// 			// std::cout << "C1" << std::endl;
+// 			break ;
+// 		}
+// 		it++;
+// 	}
+// 	// std::cout << "C2" << std::endl;
+// 	return (0);
+// }
 //USER fonctionne pas dans fist connexion car il US prend l'arg precedent et ER pareil
 // faut faire en sorte que quand ya justre command je prend pas arg precedent
 
@@ -1397,15 +1430,17 @@ client *Server::findClientByNickName(std::string clientNickname)
 void	Server::eraseClientFromList(std::string clientNickname)
 {
 	std::string temp;
-	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
+	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++)
+	{
 		if (it != this->listOfClients.end())
 		{
 			temp = (*it)->getNickName();
-			if (temp.find(clientNickname) != std::string::npos)
+			// if (temp.find(clientNickname) != std::string::npos)
+			if (temp.compare(clientNickname) == 0)
 			{
+				delete (*it);
 				listOfClients.erase(it);
-				//std::cout << "IM HERE\n";
-				free(*it);
+				//std:q:cout << "IM HERE\n";
 				//std::cout << "IM HERE 2\n";
 				return ;
 			}

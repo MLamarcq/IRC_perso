@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/18 16:29:07 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/21 20:41:47 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ class channel {
 		void		sendPrivMsg(client *client1, std::string message);
 
 
-		void		changePrivileges(std::string name, std::string username, std::string mode, std::string client1, int code);
+		void		changePrivileges(client *client_emit, std::string name, std::string username, std::string mode, std::string client1, int code);
 
 		void		setClientLimit(std::string name, std::string username, std::string mode, std::string nb);
 
@@ -89,8 +89,10 @@ class channel {
 		bool		isOperatorInChan(client *client1) const;
 		int			addClientToChannel(client *client1, Server *serv, std::vector<std::string> temp);
 
+		bool		isInChan(client *client1);
 
 
+		std::map<client *, bool> _listOfClients;
 		// variables
 	private :
 	
@@ -98,7 +100,6 @@ class channel {
 		// std::list<client *>	_operators;
 		int						_clientLimit;
 		int						_nbrClients;
-		std::map<client *, bool> _listOfClients;
 		std::list<client *>		_waitingList;
 		std::string				_name;
 		std::string				_pswd;

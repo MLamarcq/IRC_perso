@@ -6,7 +6,7 @@
 /*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/19 13:14:54 by mael             ###   ########.fr       */
+/*   Updated: 2024/02/22 13:14:12 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,8 +117,8 @@
 # define ERR_INVITEONLYCHAN(nick, channel)			(std::string(":") + SERVER_NAME + " 473 " + nick + " " + channel + " :Cannot join channel (+i)\r\n")
 # define MODE_CHANNEL_NEWMDP(nickname, username, channel, mode, pass)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now :" + pass + "\r\n")
 # define MODE_CHANNEL_CLEARMDP(nickname, username, channel, mode)			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now erased" + "\r\n")
-# define MODE_CHANNEL_NOWOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is now an operator" + "\r\n")
-# define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer an operator" + "\r\n")
+# define MODE_CHANNEL_NOWOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is now a channel operator" + "\r\n")
+# define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer a channel operator" + "\r\n")
 # define MODE_CHANNEL_CLIENTLIMIT(nickname, username, channel, mode, nb)	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "client limit is now " + nb + "\r\n")
 # define MODE_CHANNEL_NOCLIENTLIMIT(nickname, username, channel, mode)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "no more client limit" + "\r\n")
 # define MODE_CHANNEL_NO_INVITE(nickname, username, channel, mode) 			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "(invite_only) remove " + "\r\n")
@@ -145,9 +145,29 @@
 # define NOSUCHUSER(nickname, username, errNick) 							(CLIENT_ID(nickname, username, "PRIVMSG") + errNick + " :No such Nick" + "\r\n")
 # define PART_CHAN(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "PART") + dest + " reason :" + msg + "\r\n")
 # define RPL_PART(user_id, channel, reason) 								(user_id + " PART " + channel + " " + reason + "\r\n")
-# define KICK(nickname, username, channel, target, message) 				(CLIENT_ID(nickname, username, "KICK") + "#" + channel + " " + target + " :" + message + "\r\n")
+// # define KICK(nickname, username, channel, target, message) 				(CLIENT_ID(nickname, username, "KICK") + "#" + channel + " " + target + " :" + message + "\r\n")
 
+# define KICK_CHAN(nickname, username, dest, target, msg) 				(CLIENT_ID(nickname, username, "KICK") + dest + " " + target + msg + "\r\n")
+# define XKICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel + " " + target + " :" + message + "\r\n")
+# define YOU_KICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel + " " + target + " " + " " + message + "\r\n")
+# define ERR_BADOPERKEY(nickname, username)								(CLIENT_ID(nickname, username, "OPER") + ": Operator password missmatch " + "\r\n")
+# define ISNOWOPE(nickname, username)									(CLIENT_ID(nickname, username, "OPER") + ": is now operator on " + SERVER_NAME + "\r\n")
+# define ISNOWOPE_BY_USER(nickname, username)							(CLIENT_ID(nickname, username, "OPER") + ": " + nickname + " mades you an operator on " + SERVER_NAME + "\r\n")
+# define PRIVMSG_WALLOPS(nickname, username, msg) 						(CLIENT_ID(nickname, username, "WALLOPS") + msg + "\r\n")
 
+# define ERR_WALLOPSPRIVSNEEDED(nickname, username)						CLIENT_ID(nickname, username, "WALLOPS") + ":You're not an operator\r\n"
+// # define ISNOWOPEFROMCHAN(nickname, username, chan)								(CLIENT_ID(nickname, username, "OPER") + ": is now operator on " + SERVER_NAME + " and " + chan + "\r\n")
+# define ISNOWOPEFROMCHAN(nickname, username, channel, name)			(CLIENT_ID(nickname, username, "") + name + " is now a channel operator in "  + channel + "\r\n")
+
+#define CLIENT_NOTONCHANNEL(nickname, username, channel, target, mode) 	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + target + " is not on the channel" + "\r\n")
+#define WRONG_USER_MODE(nickname, username, channel, target, mode) 		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " can't affect channel privileges " + target + " is a server operator" + "\r\n")
+#define XQUIT(nickname, username, message) (CLIENT_ID(nickname, username, "QUIT") + ":" + message + "\r\n")
+
+# define JOIN_IN_CHAN(nickname, username, channel)						(CLIENT_ID(nickname, username, "JOIN")  + channel + " " + nickname + " has joigned the channel " + "\r\n")
+# define WELCOME_CHAN(nickname, username, channel)						(CLIENT_ID(nickname, username, "JOIN")  + channel + " welcome to the channel " + "\r\n")
+#define XNOTICE(nickname, username, dest, msg) (CLIENT_ID(nickname, username, "NOTICE") + dest + " :" + msg + "\r\n")
+
+#define CLIENT_NOTONCHANNEL_KICK(nickname, username, channel, target) 	(CLIENT_ID(nickname, username, "")  + channel + " " + target + " is not on the channel" + "\r\n")
 
 
 #include "server.hpp"
@@ -170,18 +190,18 @@ class command {
 		std::string		USER(int fd, Server *serv);
 		std::string		PING(int fd, Server *serv);
 		//std::string		PONG();
-		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
-		// std::string		KICK();
-		std::string		NOTICE();
-		std::string		KILL();
-		std::string		WALLOPS();
+		int				WALLOPS(int fd, Server* serv);
+		int				OPER(int fd, Server* serv);
+		int				KICK(int fd, Server* serv);
 		int				TOPIC(client *client1, Server *serv);
 		int				MODE(client *client1, Server *serv);
 		int				JOIN(client *client1, Server *serv);
 		int				INVITE(client *client1, Server *serv);
 		int				PRIVMSG(client *client1, Server *serv);
 		int				PART(client *client1, Server *serv);
+		int				KILL(int fd, Server* serv);
+		int				NOTICE(int fd, Server* serv);
 
 		std::string		bot();
 
